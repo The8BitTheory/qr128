@@ -12,7 +12,6 @@ k_indsta = $ff77
 
 location = $fa ;$FA-$FB. location of the string
 length = $fc   ;$FC. length of the string
-temp = $fd     ;$FD-FE
 
 
 *=$1300
@@ -21,7 +20,6 @@ temp = $fd     ;$FD-FE
   sta length
   stx location
   sty location+1
-  
   
   ldy #0
   sei
@@ -41,7 +39,7 @@ temp = $fd     ;$FD-FE
   beq .comp2
   
   ; then a=a-128
-  clc
+  sec
   sbc #128
   
   jmp .write
