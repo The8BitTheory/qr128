@@ -24,8 +24,6 @@ k_indsta = $ff77
 z_datastream =  $fa   ;$fa-$fb - pointer to the address where to write the bits to (length 108)
 z_rsresult =    $fc   ;$fc-$fd - holds the intermediary and final result of reed solomon fec calculation
 
-;z_output =     $fc   ;$fc-$fd - pointer to the address where to write the final output matrix to (length 1369)
-
 divisor    =   $03e4   ; current divisor
 rsfactor =     $03e5
 
