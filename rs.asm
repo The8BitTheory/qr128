@@ -1,11 +1,11 @@
-﻿; reed-solomon error correction calculation for use in qr-codes
+; reed-solomon error correction calculation for use in qr-codes
 ; acc takes zp-address pointing to memory of the datastream (108 bytes long)
 ; regx takes zp-address pointing to memory address of final output (26 bytes long)
 
 ; the result of this is 26 ecc bytes written
 
 
-!to "reedsolomon.bin",cbm
+;!to "reedsolomon.bin",cbm
 
 ;!source <cbm/c128/kernal.a>
 
@@ -40,8 +40,8 @@ loopc =        $03ed   ; loop counter in rsremainder for the loop that contains 
 rsmulx =       $03ee   ; store and recover x-reg here when calling rsmultiply
 rsmuly =       $03ef   ; store and recover y-reg here when calling rsmultiply
 
-*= $1300
-
+;*= $1300
+rs
     sta z_datastream
     stx z_datastream+1
 
@@ -177,7 +177,6 @@ rsmultiply:
     ;B=B AND 1
 +   and #1
     sta rsmul1
-
 
     beq +
     

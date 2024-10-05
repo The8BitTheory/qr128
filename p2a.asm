@@ -1,8 +1,8 @@
-; petscii to ascii conversion
+﻿; petscii to ascii conversion
 ; takes the result of pointer(x) as input (i). regx=loc lb, regy=loc hb, acc=length
 ; bank 1, peek(i) gives length of string, peek(i+1)+peek(i+2)*256 gives address of string
 
-!to "p2a.bin",cbm
+;!to "p2a.bin",cbm
 
 ;!source <cbm/c128/kernal.a>
 
@@ -14,8 +14,8 @@ location = $fa ;$FA-$FB. location of the string
 length = $fc   ;$FC. length of the string
 
 
-*=$1300
-
+;*=$1300
+p2a
   ; store parameters
   sta length
   stx location
@@ -36,7 +36,7 @@ length = $fc   ;$FC. length of the string
   
   ; > 218
   cmp #218
-  beq .comp2
+  beq .comp2  
   
   ; then a=a-128
   sec
