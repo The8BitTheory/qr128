@@ -33,7 +33,7 @@ m_one            = $03eb  ;holds the value 1. used for BIT operation
 m_128            = $03ec  ;holds the value 128. used for BIT operation
 
 !to "stream2mod.bin",cbm
-*= $1306
+;*= $1306
 
 stream_to_module
 
@@ -83,7 +83,7 @@ stream_to_module
   
 -   lda (z_datastream),y
     bit z_temp
-    bne +
+    beq +
     lda #%01000001                 ;bit 6 set means data-module. bit 0 set means dark module
     jmp ++
 +   lda #%01000000                 ;bit 6 means data-module. bit 0 clear means light module
@@ -121,8 +121,8 @@ writeAndAdvance
 ; do we advance in a column > 6 or <= 6?
 .advGt6
     bit m_one  
-    beq .advWriteIdx1 ; odd columns go diagonal up or down next
-    jmp .advWriteIdx2 ; even columns go left first
+    beq .advWriteIdx1 ; even columns go left first
+    jmp .advWriteIdx2 ; odd columns go diagonal up or down next
 
         
 .advLt6
@@ -133,8 +133,11 @@ writeAndAdvance
 
 ; go one column to the left. that's -1 in the matrix and -1 for col
 .advWriteIdx1
-    dec z_output
-    bpl +
+    sec
+    lda z_output
+    sbc #1
+    sta z_output
+    bcs +
     dec z_output+1
     
 +   dec m_curCol
@@ -143,7 +146,7 @@ writeAndAdvance
     ldx #0
     lda (z_output,x)
     bit m_128
-    bne .advWriteIdx2
+    beq .advWriteIdx2
 
     rts
 
@@ -151,7 +154,7 @@ writeAndAdvance
 .advWriteIdx2
     lda m_writeDirection
     bit m_one
-    beq .advUp
+    bne .advUp
     jmp .advDown
 
 .advUp
@@ -159,7 +162,7 @@ writeAndAdvance
     ;z_output=z_output-axislength+1
     sec
     lda z_output
-    sbc axisLength
+    sbc #axisLength
     sta z_output
     bcs +
     dec z_output+1
@@ -187,8 +190,8 @@ writeAndAdvance
     
     ldx #0
     lda (z_output,x)
-    bit m_128
-    bne .advWriteIdx1
+    bit m_128         ;128 means, new location is free to write
+    beq .advWriteIdx1 
     
     ; new location not occupied. we're done.
     rts
@@ -198,7 +201,7 @@ writeAndAdvance
     ;W=W+L-2:D=0:C=C-2
     clc
     lda z_output
-    adc axisLength
+    adc #axisLength
     sta z_output
     bcc +
     inc z_output+1
@@ -225,7 +228,7 @@ writeAndAdvance
     ;W=W+L+1
     clc
     lda z_output
-    adc axisLength
+    adc #axisLength
     sta z_output
     bcc +
     inc z_output+1
@@ -251,7 +254,7 @@ writeAndAdvance
     ;W=W-L-2:D=-1:C=C-2
     sec
     lda z_output
-    sbc axisLength
+    sbc #axisLength
     sta z_output
     bcs +
     dec z_output+1
