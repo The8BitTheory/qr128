@@ -1,8 +1,8 @@
-﻿; petscii to ascii conversion
+; petscii to ascii conversion
 ; takes the result of pointer(x) as input (i). regx=loc lb, regy=loc hb, acc=length
 ; bank 1, peek(i) gives length of string, peek(i+1)+peek(i+2)*256 gives address of string
 
-;!to "p2a.bin",cbm
+!to "p2a.bin",cbm
 
 ;!source <cbm/c128/kernal.a>
 
@@ -10,22 +10,22 @@ k_indfet = $ff74
 k_indsta = $ff77
 
 
-location = $fa ;$FA-$FB. location of the string
-length = $fc   ;$FC. length of the string
+;location = $fa ;$FA-$FB. location of the string
+;length = $fc   ;$FC. length of the string
 
 
 ;*=$1300
 p2a
   ; store parameters
-  sta length
-  stx location
-  sty location+1
+;  sta length
+;  stx location
+;  sty location+1
   
   ldy #0
   sei
   
 .loop
-  lda #location
+  lda #z_location
   ldx #1
   jsr k_indfet
 
@@ -58,14 +58,14 @@ p2a
   adc #32
   
 .write
-  ldx #location
+  ldx #z_location2
   stx $02b9
   
-  ldx #1
+  ldx #0
   jsr k_indsta
   
   iny
-  cpy length
+  cpy contentLength
   bne .loop
   
   cli
