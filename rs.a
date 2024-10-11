@@ -1,8 +1,5 @@
 ; reed-solomon error correction calculation for use in qr-codes
-; acc takes zp-address pointing to memory of the datastream (108 bytes long)
-; regx takes zp-address pointing to memory address of final output (26 bytes long)
-
-; the result of this is 26 ecc bytes written
+; writes the resulting ecc bytes directly into the right memory position
 
 
 ;!to "reedsolomon.bin",cbm
@@ -230,12 +227,3 @@ rsdivisors
     !byte $F6,$33,$B7,$4,$88,$62,$C7,$98,$4D,$38,$CE,$18,$91,$28,$D1,$75
     !byte $E9,$2A,$87,$44,$46,$90,$92,$4D,$2B,$5E
     
-;datastream
-;    !byte 65,166,135,71,71,7,51,162,242,247,119,119,114,230,71,150,230
-;    !byte 23,71,38,22,54,82,230,54,246,210,240,236,17,236,17,236,17,236
-;    !byte 17,236,17,236,17,236,17,236,17,236,17,236,17,236,17,236,17,236
-;    !byte 17,236,17,236,17,236,17,236,17,236,17,236,17,236,17,236,17,236
-;    !byte 17,236,17,236,17,236,17,236,17,236,17,236,17,236,17,236,17,236
-;    !byte 17,236,17,236,17,236,17,236,17,236,17,236,17,236,17,236,17,236
-;    !byte 17 
-;datastream_end
