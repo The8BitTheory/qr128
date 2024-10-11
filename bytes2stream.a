@@ -8,15 +8,13 @@
 bytes_to_stream
 ; calculate start address of datastream (matrix end)
 
-    inc contentLength ;increase to make stop-condition easier to check
-
     clc
     lda #<data
-    adc #<matrixSize
+    adc matrixSize
     sta z_location
     
     lda #>data
-    adc #>matrixSize
+    adc matrixSize+1
     sta z_location+1
 
 ; write mode byte and first nybble of length byte
@@ -33,6 +31,7 @@ bytes_to_stream
     
     lda contentLength
     jsr writeToStream
+    inc contentLength   ;increase to make stop-condition easier to check
 
 ; write content bytes
 -   ldx #0
@@ -68,7 +67,7 @@ bytes_to_stream
     sta z_counter2    ;store padding length in counter
     
 
-    ;y should still be current with z_counter1 at the position of the last content byte
+    ;y is still current with z_counter1 at the position of the last content byte
 -   ldx #0
     lda #$ec
     jsr k_indsta
@@ -88,6 +87,10 @@ bytes_to_stream
 +   ldx #0
     lda #0
     jsr k_indsta
+    iny
+    sta z_counter1    ; z_counter1 is used by the next routine (ecc-calculation) to have the right write-offset
+    
+    
     
     rts
     

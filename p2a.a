@@ -50,8 +50,8 @@ p2a
   cmp #65
   bcc .write
   
-; > 90
-  cmp #90
+; > 91
+  cmp #91
   beq .write
   
   clc
