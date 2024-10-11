@@ -10,18 +10,18 @@ m_ypos      = $03e5
 size = 37
 matrixsize = size*size-1
  
-*=$1300
+;*=$1300
 
   
 
 
   clc
   lda $fa
-  adc <#matrixsize
+  adc #<matrixsize
   sta z_matrixpos
   
   lda $fb
-  adc >#matrixsize
+  adc #>matrixsize
   sta z_matrixpos+1
   
   ldx #size

@@ -1,4 +1,4 @@
-; this writes the bytes of the datastream into the matrix that's finally to become the qr-code
+﻿; this writes the bytes of the datastream into the matrix that's finally to become the qr-code
 ; this still needs to be ORed accordingly to become a valid qr-code
 
 ; procedure

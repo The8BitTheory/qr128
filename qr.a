@@ -60,6 +60,7 @@ init
     sta eccLength
     lda #26
     sta streamLength
+    jmp ++
     
 +   cmp #33
     bcs +
@@ -73,6 +74,7 @@ init
     sta eccLength
     lda #44
     sta streamLength
+    jmp ++
     
 +   cmp #54
     bcs +
@@ -86,6 +88,7 @@ init
     sta eccLength
     lda #70
     sta streamLength
+    jmp ++
     
 +   cmp #79
     bcs +
@@ -99,6 +102,7 @@ init
     sta eccLength
     lda #100
     sta streamLength
+    jmp ++
     
 +   cmp #107
     bcs +
@@ -112,7 +116,6 @@ init
     sta eccLength
     lda #134
     sta streamLength
-    
     jmp ++
 
 ; content too long for this    
@@ -123,10 +126,11 @@ init
 ++  rts
 
 
-!source "p2a.asm"
+!source "p2a.a"
 !source "bytes2stream.a"
-!source "rs.asm"
-!source "stream2module.asm"
-!source "masks.asm"
+
+!source "rs.a"
+!source "stream2module.a"
+;!source "masks.a"
 
 data    !byte 0
