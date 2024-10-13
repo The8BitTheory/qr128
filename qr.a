@@ -17,6 +17,7 @@ z_counter2  = $0c     ;VERCK
     jmp init
     jmp p2a
     jmp bytes_to_stream
+    jmp calc_xor_masks
     jmp rs
     jmp write_patterns
     jmp stream_to_module
@@ -32,13 +33,14 @@ rsDivisorOffset !byte 0
 ;counter2        !byte 0
 
 !source "init.a"
-!source "p2a.a"             ; reads petscii bytes from z_location and writes ascii to z_location2
+!source "p2a.a"             ; reads petscii bytes from z_location and writes ascii to z_location2 (which is matrix-start)
 !source "bytes2stream.a"    ; reads ascii from z_location2 and writes into datastream at z_location (=data+matrix_size)
                             ; z_counter1 holds the right offset for rs.a to continue using it.
+!source "masks.a"           ; this clears the matrix memory area and calculates all the xor-masks
 !source "rs.a"              ; reads content bytes from datastream (z_location) and writes ecc bytes to 
                             ; z_location2(=z_location + z_counter1)
 !source "patterns.a"        ; this writes timing, alignment, finder patterns etc.
 !source "stream2module.a"
-;!source "masks.a"
+
 
 data    !byte 0

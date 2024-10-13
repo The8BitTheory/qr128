@@ -1,100 +1,130 @@
 ; 101 bytes of codesize
 ; generates a result of 684 bytes (in v5 codes)
 
-z_matrix    = $fa
-z_matrixpos = $fc
+
+!zone masks
 m_xpos      = $03e4
 m_ypos      = $03e5
 
+calc_xor_masks
 
-size = 37
-matrixsize = size*size-1
- 
-;*=$1300
+    lda #<data
+    sta z_location
+    lda #>data
+    sta z_location+1
+  
+    ; initialize matrix with value 128 (highest bit set)
+    
+    ldx size  ;rows (x-axis)
+    stx z_temp
+    
+--  lda #128
+    ldy #0
+
+-   sta (z_location),y
+    iny
+    cpy size
+    bne -
+    
+    dex
+    beq ++
+
+    clc
+    lda z_location
+    adc size
+    sta z_location
+    bcc +
+    inc z_location+1
+    
++   jmp --
 
   
+    ; calc xor masks. reset z_location to start of matrix
+++  lda #<data
+    sta z_location
+    lda #>data
+    sta z_location+1
+    
+    ldx #0
+    stx m_xpos
+    stx m_ypos
 
+  ; mask 111: x%3=0
+-   lda m_xpos
+    jsr .modulo_3_is_zero
+    bne +       ; if not zero don't write mask-bit to module
+    lda #%00010000
+    jsr .write_to_mask
+    
+  ; mask 110: (y+x)%3=0
++   clc
+    lda m_xpos
+    adc m_ypos
+    jsr .modulo_3_is_zero
+    bne +
+    lda #%00001000
+    jsr .write_to_mask
+    
+  ; mask 101: (y+x)%2=0
++   clc
+    lda m_xpos
+    adc m_ypos
+    and #%00000001  ;1-bit at the end says it's an odd number --> modulo by two is not zero
+    bne +     ;if AND was zero, don't change module
+    lda #%00000100
+    jsr .write_to_mask
+    
+    ; mask 100: y%2=0
++   lda m_ypos
+    and #%00000001
+    bne +
+    lda #%00000010
+    jsr .write_to_mask
+    
++   inc m_xpos
+    lda m_xpos
+    cmp size
+    bne -     ; last column not passed, continue with next module
+    
+    ; last column passed
+    lda #0
+    sta m_xpos
+    inc m_ypos            ; increase row
+    lda m_ypos
+    cmp size              ; if passed last row, we're done
+    beq .end
+    
+    ; last row not passed
+    clc
+    lda z_location
+    adc size
+    sta z_location
+    bcc +
+    inc z_location+1
+    
+    
+    ; last column not passed
++   jmp -
 
-  clc
-  lda $fa
-  adc #<matrixsize
-  sta z_matrixpos
-  
-  lda $fb
-  adc #>matrixsize
-  sta z_matrixpos+1
-  
-  ldx #size
-  dex
-  stx m_xpos
-  stx m_ypos
-
-; mask 111: x%3=0
-- lda m_xpos
-  jsr .modulo_3
-  bne +       ; if not zero don't write mask-bit to module
-  lda #%00010000
-  jsr .write_to_mask
-  
-; mask 110: (y+x)%3=0
-+ clc
-  lda m_xpos
-  adc m_ypos
-  jsr .modulo_3
-  bne +
-  lda #%00001000
-  jsr .write_to_mask
-  
-; mask 101: (y+x)%2=0
-+ clc
-  lda m_xpos
-  adc m_ypos
-  and #%00000001  ;1-bit at the end says it's an odd number --> modulo by two is not zero
-  bne +     ;if AND was zero, don't change module
-  lda #%00000100
-  jsr .write_to_mask
-  
-; mask 100: y%2=0
-+ lda m_ypos
-  and #%00000001
-  bne +
-  lda #%00000010
-  jsr .write_to_mask
-  
-  
-+ dec z_matrixpos
-  bpl +
-  dec z_matrixpos+1
-  
-+ dec m_xpos  ;decrease x-position (col)
-  bpl -   ;if >=0, do next calculation. 
-  
-  dec m_ypos  ; else decrease row
-  bmi +   ; if row <0, all mask modules are written. jump to end
-  
-  ldx #size ; else, set x-pos to rightmost column (size-1)
-  dex
-  stx m_xpos
-  jmp -   ; and continue with next calculation
-  
-+ rts
+.end
+    rts
 
 
 
 .write_to_mask
-  ldx #0
-  ora (z_matrixpos,x)
-  sta (z_matrixpos,x)
-  rts
+    ldy m_xpos
+    ora (z_location),y
+    sta (z_location),y
+    rts
 
-  
-; does %3=0. acc contains the number in question. result will be stored in zero flag
-.modulo_3_iszero
-  sec
-- sbc #3
-  beq + ; Acc is Zero, so Modulo is zero
-  bcs - ; Acc not Zero, but we're below zero. Modulo is not zero
-  
-+ rts
+    
+  ; does %3=0. acc contains the number in question. result will be stored in zero flag
+.modulo_3_is_zero
+    sec
+-   sbc #3
+    beq + ; Acc is Zero, so Modulo is zero
+    bcs - ; Acc not Zero, but we're below zero. Modulo is not zero
+    
++   rts
 
-matrix 
+ 

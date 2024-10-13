@@ -47,38 +47,8 @@ stream_to_module
     dex
     stx m_curCol
     
-    ;use z_location2 to clear matrix memory area
-    lda m_startAddress
-    sta z_location2
-    lda m_startAddress+1
-    sta z_location2+1
-    
-    ; initialize matrix with value 128 (highest bit set)
-    
-    ldx size  ;rows (x-axis)
-    stx z_temp
-    
---  lda #128
-    ldy #0
-
--   sta (z_location2),y
-    iny
-    cpy size
-    bne -
-    
-    dex
-    beq ++
-    clc
-    lda z_location2
-    adc size
-    sta z_location2
-    bcc +
-    inc z_location2+1
-    
-+   jmp --
-    
-    
-++  lda z_location
+;   setup writing to the matrix
+    lda z_location
     sta z_location2
     sta m_endAddress
     
