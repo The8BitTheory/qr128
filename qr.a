@@ -18,6 +18,7 @@ z_counter2  = $0c     ;VERCK
     jmp p2a
     jmp bytes_to_stream
     jmp rs
+    jmp write_patterns
     jmp stream_to_module
     rts
     
@@ -34,7 +35,9 @@ rsDivisorOffset !byte 0
 !source "p2a.a"             ; reads petscii bytes from z_location and writes ascii to z_location2
 !source "bytes2stream.a"    ; reads ascii from z_location2 and writes into datastream at z_location (=data+matrix_size)
                             ; z_counter1 holds the right offset for rs.a to continue using it.
-!source "rs.a"              ; reads content bytes from datastream (z_location) and writes ecc bytes to z_location2(=z_location + z_counter1)
+!source "rs.a"              ; reads content bytes from datastream (z_location) and writes ecc bytes to 
+                            ; z_location2(=z_location + z_counter1)
+!source "patterns.a"        ; this writes timing, alignment, finder patterns etc.
 !source "stream2module.a"
 ;!source "masks.a"
 

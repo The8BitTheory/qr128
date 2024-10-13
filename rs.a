@@ -18,6 +18,8 @@
 ;z_location =     $fa   ;$fa-$fb - pointer to the address where to read from and write to (length 108)
 ;z_location2 =    $fc   ;$fc-$fd - holds the intermediary and final result of reed solomon fec calculation
 
+!zone reedSolomon
+
 divisor    =   $03e4   ; current divisor
 rsfactor =     $03e5
 
@@ -121,12 +123,12 @@ rsremainder:
     bne -
     
     dec z_counter2
-    beq end
+    beq .end
     
     inc z_counter1
     jmp rsremainder
     
-end:
+.end:
     rts
     
     ;xreg=factor, acc=divisor (y in basic)

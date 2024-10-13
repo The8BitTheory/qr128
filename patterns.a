@@ -1,0 +1,121 @@
+; this writes the
+; - timing patterns (horizontal and vertical).
+;   starting at row and column 6 (zero-based), starting with dark
+; - finder patterns (top left, top right, bottom left)
+;   8 modules, starting with dark at the corners
+; - alignment pattern (only version 2 and up)
+;   5x5 modules. at size-9 pixels. (or rightmost col-8 pixels) (eg 28 for 37 wide) (both, horizontal and vertical)
+; 
+; format patterns are part of the xor-mask
+
+write_patterns
+  
+!zone write_patterns
+
+    jsr .set_location
+    
+    ;--------------------
+    ; horizontal pattern
+    ;--------------------
+    ; add 6xsize to be in the row for writing the pattern
+    ldy #6
+    lda z_location
+-   clc
+    adc size
+    sta z_location
+    bcc +
+    inc z_location+1
+    
++   dey
+    bne -
+    
+    ; write modules, starting with dark
+    lda #z_location   ; setup for indsta
+    sta $02b9
+    
+    ldy #0
+-   ldx #0
+    lda #1
+    jsr k_indsta
+    iny
+    
+    cpy size          ; size is always an odd number, we only need to check for completeness here.
+    beq .do_vertical
+    
+    ldx #0
+    lda #0
+    jsr k_indsta
+    iny
+    jmp -
+  
+
+    ;------------------
+    ; vertical pattern 
+    ;------------------
+.do_vertical
+    ;walk to column 6, row 0
+    jsr .set_location
+    
+    clc
+    lda z_location
+    adc #6
+    sta z_location
+    bcc +
+    inc z_location+1
+    
++   ldy #0
+    sty z_counter1
+-   ldy #0
+    ldx #0
+    lda #1
+    jsr k_indsta
+    ldy z_counter1
+    iny
+    
+    cpy size
+    beq .end
+    
+    sty z_counter1      ; could do inc z_counter1 as well, but that takes 5 cycles (sty takes 3)
+    jsr .inc_line
+    
+    ldy #0
+    ldx #0
+    lda #0
+    jsr k_indsta
+    inc z_counter1      ; now inc makes sense. 5 cycles over (3 and 2 and 3 for ldy iny sty)
+    jsr .inc_line
+    jmp -
+    
+
+
+.inc_line
+    lda z_location
+    clc
+    adc size
+    sta z_location
+    bcc +
+    inc z_location+1
+    
++   rts
+
+
+    ; put first memory position of matrix into z_location
+.set_location
+    lda #<data
+    sta z_location
+    lda #>data
+    sta z_location+1
+    rts
+
+
+.end
+    rts
+  
+
+
+
+
+
+
+
+
