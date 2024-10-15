@@ -49,14 +49,14 @@ calc_xor_masks
     stx m_xpos
     stx m_ypos
 
-  ; mask 111: x%3=0
+  ; mask 111 (bit 4): x%3=0
 -   lda m_xpos
     jsr .modulo_3_is_zero
     bne +       ; if not zero don't write mask-bit to module
     lda #%00010000
     jsr .write_to_mask
     
-  ; mask 110: (y+x)%3=0
+  ; mask 110 (bit 3): (y+x)%3=0
 +   clc
     lda m_xpos
     adc m_ypos
@@ -65,7 +65,7 @@ calc_xor_masks
     lda #%00001000
     jsr .write_to_mask
     
-  ; mask 101: (y+x)%2=0
+  ; mask 101 (bit 2): (y+x)%2=0
 +   clc
     lda m_xpos
     adc m_ypos
@@ -74,7 +74,7 @@ calc_xor_masks
     lda #%00000100
     jsr .write_to_mask
     
-    ; mask 100: y%2=0
+    ; mask 100 (bit 1): y%2=0
 +   lda m_ypos
     and #%00000001
     bne +

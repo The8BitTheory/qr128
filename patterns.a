@@ -15,7 +15,7 @@ write_patterns
     jsr .set_location
     
     ;--------------------
-    ; horizontal pattern
+    ; horizontal timing pattern
     ;--------------------
     ; add 6xsize to be in the row for writing the pattern
     ldy #6
@@ -50,7 +50,7 @@ write_patterns
   
 
     ;------------------
-    ; vertical pattern 
+    ; vertical timing pattern 
     ;------------------
 .do_vertical
     ;walk to column 6, row 0
@@ -73,7 +73,7 @@ write_patterns
     iny
     
     cpy size
-    beq .end
+    beq .do_finder
     
     sty z_counter1      ; could do inc z_counter1 as well, but that takes 5 cycles (sty takes 3)
     jsr .inc_line
@@ -85,6 +85,121 @@ write_patterns
     inc z_counter1      ; now inc makes sense. 5 cycles over (3 and 2 and 3 for ldy iny sty)
     jsr .inc_line
     jmp -
+    
+    ;---------------
+    ; Finder patterns
+    ;---------------
+    
+.do_finder
+
+    ;top-left
+    jsr .set_location_minus_1
+
+    jsr .do_finder_line_1
+    jsr .do_finder_line_2
+    jsr .do_finder_line_345
+    jsr .do_finder_line_2
+    jsr .inc_line
+    jsr .do_finder_line_1
+
+    ;bottom-left
+    jsr .set_location_minus_1
+    
+    ;calculate starting position of bottom-left pattern (=matrixSize-7*size)
+    ; subtracting 7 lines from end of matrix is faster than adding size-7 lines to the start of the matrix
+    ; start by storing end address of matrix in z_location
+    lda z_location
+    clc
+    adc matrixSize
+    sta z_location
+    bcc +
+    inc z_location+1
+    
++   lda z_location+1
+    clc
+    adc matrixSize+1
+    sta z_location+1
+    
+    ; now, subtract 7 lines from z_location
+    lda z_location
+    ldy #7
+-   sec
+    sbc size
+    bcs +
+    dec z_location+1
+
++   dey
+    bne -
+    
+    sec
+    sbc #1
+    sta z_location
+    bcs +
+    dec z_location
+    
++   jsr .do_finder_line_1
+    jsr .do_finder_line_2
+    jsr .do_finder_line_345
+    jsr .do_finder_line_2
+    jsr .inc_line
+    jsr .do_finder_line_1
+    
+    
+    jmp .end
+
+    
+    
+    ;this prints the following pattern
+    ;XXXXXXX
+    ;X     X
+    ;X XXX X
+    ;X XXX X
+    ;X XXX X
+    ;X     X
+    ;XXXXXXX
+    
+    
+    ; first line
+.do_finder_line_1
+    ldy #7
+
+-   ldx #0
+    lda #1
+    jsr k_indsta
+    dey
+    bne -
+    
+    rts
+    
+    ; second line
+.do_finder_line_2
+    jsr .inc_line
+    ldy #7
+-   ldx #0
+    lda .modules_1000001-1,y
+    jsr k_indsta
+    dey
+    bne -
+    
+    rts
+    
+    ; lines 3-5
+.do_finder_line_345
+    lda #3
+    sta z_counter1
+    
+--  jsr .inc_line
+    ldy #7
+-   ldx #0
+    lda .modules_1011101-1,y
+    jsr k_indsta
+    dey
+    bne -
+    
+    dec z_counter1
+    bne --
+    
+    rts
     
 
 
@@ -107,11 +222,25 @@ write_patterns
     sta z_location+1
     rts
 
+.set_location_minus_1
+    jsr .set_location
+    
+    lda z_location
+    sec
+    sbc #1
+    sta z_location
+    bcs +
+    dec z_location+1
+    
++   rts
 
 .end
     rts
   
 
+; first value is always skipped. set to invalid value
+.modules_1000001 !byte 1,0,0,0,0,0,1
+.modules_1011101 !byte 1,0,1,1,1,0,1
 
 
 

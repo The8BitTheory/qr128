@@ -21,6 +21,20 @@ z_counter2  = $0c     ;VERCK
     jmp rs
     jmp write_patterns
     jmp stream_to_module
+    jmp showdata
+    
+    rts
+    
+showdata
+    lda #<data
+    sta $03e8
+    lda #>data
+    sta $03e9
+    
+    lda size
+    sta $03ea
+    
+    
     rts
     
 size            !byte 0   ;size of one axis-length of the final matrix
