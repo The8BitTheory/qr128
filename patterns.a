@@ -95,12 +95,7 @@ write_patterns
     ;top-left
     jsr .set_location_minus_1
 
-    jsr .do_finder_line_1
-    jsr .do_finder_line_2
-    jsr .do_finder_line_345
-    jsr .do_finder_line_2
-    jsr .inc_line
-    jsr .do_finder_line_1
+    jsr .do_finder_square
 
     ;bottom-left
     jsr .set_location_minus_1
@@ -108,47 +103,49 @@ write_patterns
     ;calculate starting position of bottom-left pattern (=matrixSize-7*size)
     ; subtracting 7 lines from end of matrix is faster than adding size-7 lines to the start of the matrix
     ; start by storing end address of matrix in z_location
-    lda z_location
-    clc
-    adc matrixSize
-    sta z_location
-    bcc +
-    inc z_location+1
-    
-+   lda z_location+1
-    clc
-    adc matrixSize+1
-    sta z_location+1
+    jsr .set_location_end
     
     ; now, subtract 7 lines from z_location
     lda z_location
     ldy #7
 -   sec
     sbc size
+    sta z_location
     bcs +
     dec z_location+1
 
 +   dey
     bne -
+        
+    jsr .do_finder_square
     
-    sec
-    sbc #1
+    
+    ;top-right
+    jsr .set_location_minus_1
+    
+    ;calculate starting position of top-right pattern(=matrixStart + size-7)
+    lda z_location
+    clc
+    adc size
+    sta z_location
+    bcc +
+    inc z_location+1
+    
++   sec
+    sbc #7
     sta z_location
     bcs +
-    dec z_location
+    dec z_location+1
     
-+   jsr .do_finder_line_1
-    jsr .do_finder_line_2
-    jsr .do_finder_line_345
-    jsr .do_finder_line_2
-    jsr .inc_line
-    jsr .do_finder_line_1
-    
-    
-    jmp .end
++   jsr .do_finder_square
 
+    ; we're done. if contentlength > 17, draw the alignment pattern. else, return
+    lda contentLength
+    cmp #18
+    bcs .do_alignment_pattern
+    rts
     
-    
+
     ;this prints the following pattern
     ;XXXXXXX
     ;X     X
@@ -157,6 +154,15 @@ write_patterns
     ;X XXX X
     ;X     X
     ;XXXXXXX
+.do_finder_square
+    jsr .do_finder_line_1
+    jsr .do_finder_line_2
+    jsr .do_finder_line_345
+    jsr .do_finder_line_2
+    jsr .inc_line
+    jsr .do_finder_line_1
+    
+    rts
     
     
     ; first line
@@ -201,7 +207,78 @@ write_patterns
     
     rts
     
+    
+.do_alignment_pattern
+    ; the alignment pattern is 5x5 and always at location 28x28 (size - 9)
+    ; XXXXX
+    ; X   X
+    ; X X X
+    ; X   X
+    ; XXXXX
+    
+    jsr .set_location_end
+    
+    ; now, subtract 8 lines from z_location
+    lda z_location
+    ldy #8
+-   sec
+    sbc size
+    sta z_location
+    bcs +
+    dec z_location+1
 
++   dey
+    bne -
+    
+    ; finally, subtract 10 from z_location (usually 9, but we re-use another method)
+    lda z_location
+    sec
+    sbc #10
+    sta z_location
+    bcs +
+    dec z_location+1
+
++   jsr .do_alignment_line_1
+    jsr .do_alignment_line_2
+    jsr .do_alignment_line_3
+    jsr .do_alignment_line_2
+    jsr .inc_line
+    jsr .do_alignment_line_1
+
+    jmp .end
+    
+.do_alignment_line_1
+    ldy #5
+
+-   ldx #0
+    lda #1
+    jsr k_indsta
+    dey
+    bne -
+    
+    rts
+    
+.do_alignment_line_2
+    jsr .inc_line
+    ldy #5
+-   ldx #0
+    lda .modules_10001-1,y
+    jsr k_indsta
+    dey
+    bne -
+    
+    rts
+
+.do_alignment_line_3
+    jsr .inc_line
+    ldy #5
+-   ldx #0
+    lda .modules_10101-1,y
+    jsr k_indsta
+    dey
+    bne -
+    
+    rts
 
 .inc_line
     lda z_location
@@ -234,6 +311,23 @@ write_patterns
     
 +   rts
 
+.set_location_end
+    jsr .set_location
+    
+    lda z_location
+    clc
+    adc matrixSize
+    sta z_location
+    bcc +
+    inc z_location+1
+    
++   lda z_location+1
+    clc
+    adc matrixSize+1
+    sta z_location+1
+    
+    rts
+    
 .end
     rts
   
@@ -241,7 +335,8 @@ write_patterns
 ; first value is always skipped. set to invalid value
 .modules_1000001 !byte 1,0,0,0,0,0,1
 .modules_1011101 !byte 1,0,1,1,1,0,1
-
+.modules_10001   !byte 1,0,0,0,1
+.modules_10101   !byte 1,0,1,0,1
 
 
 
