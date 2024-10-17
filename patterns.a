@@ -116,8 +116,15 @@ write_patterns
 
 +   dey
     bne -
+    
+    lda z_location
+    sec
+    sbc #1
+    sta z_location
+    bcs +
+    dec z_location+1
         
-    jsr .do_finder_square
++   jsr .do_finder_square
     
     
     ;top-right
