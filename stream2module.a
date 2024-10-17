@@ -60,9 +60,9 @@ stream_to_module
     jmp ++
 +   lda #%01000000                 ;bit 6 means data-module. bit 0 clear means light module
     
-++  sty z_counter1
+++  ;sty z_counter1
     jsr writeAndAdvance
-    ldy z_counter1
+    ;ldy z_counter1
 
     lda z_temp
     lsr
@@ -79,6 +79,7 @@ stream_to_module
 ; writes the accumulator to the current write offset and then calculates the next offset position
 writeAndAdvance
     ldx #0
+    ora (z_location,x)
     sta (z_location,x)
     
     ; where are we in relation to column 6? (col 6 is skipped and it changes even-odd behavior of offset pos calc)
@@ -140,7 +141,7 @@ writeAndAdvance
     dec z_location+1
 
 +   clc
-    lda z_location
+;    lda z_location
     adc #1
     sta z_location
     bcc +
@@ -149,9 +150,10 @@ writeAndAdvance
 ; check if we moved outside of the matrix (ie went to before the first row). if output < m_startAddress: change direction
 +   lda z_location+1
     cmp m_startAddress+1
-    bcc .changeDirectionToDown
+    beq +
+    jmp .endAdvWriteIdx2
     
-    lda z_location
++   lda z_location
     cmp m_startAddress
     bcc .changeDirectionToDown
     
@@ -172,7 +174,7 @@ writeAndAdvance
 .changeDirectionToDown    
     ;W=W+L-2:D=0:C=C-2
     clc
-    lda z_location
+;    lda z_location
     adc size
     sta z_location
     bcc +
@@ -214,18 +216,19 @@ writeAndAdvance
 ; check if we moved outside of the matrix (ie went to past the last row). if output > m_endAddress: change direction
 +   lda z_location+1
     cmp m_endAddress+1
-    bcs .changeDirectionToUp
+    beq +
+    jmp .endAdvWriteIdx2
     
-    lda z_location
++   lda z_location
     cmp m_endAddress
     bcs .changeDirectionToUp
     
-    rts
+    jmp .endAdvWriteIdx2
     
 .changeDirectionToUp
     ;W=W-L-2:D=-1:C=C-2
     sec
-    lda z_location
+;    lda z_location
     sbc size
     sta z_location
     bcs +
@@ -267,7 +270,6 @@ writeAndAdvance
     sta m_endAddress
     bcc +
     inc z_location2+1
-    inc m_endAddress+1
     
 +   lda z_location2+1
     clc
