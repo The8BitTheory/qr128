@@ -94,7 +94,6 @@ write_patterns
 
     ;top-left
     jsr .set_location_minus_1
-
     jsr .do_finder_square
 
     ;bottom-left
@@ -139,12 +138,12 @@ write_patterns
     inc z_location+1
     
 +   sec
-    sbc #7
+    sbc #8
     sta z_location
     bcs +
     dec z_location+1
     
-+   jsr .do_finder_square
++   jsr .do_finder_square_right
 
     ; we're done. if contentlength > 17, draw the alignment pattern. else, return
     lda contentLength
@@ -163,14 +162,59 @@ write_patterns
     ;XXXXXXX
 .do_finder_square
     jsr .do_finder_line_1
+    jsr .do_0
+    jsr .inc_line
     jsr .do_finder_line_2
+    jsr .do_0
+    jsr .inc_line
     jsr .do_finder_line_345
+    jsr .do_0
+    jsr .inc_line
+    jsr .do_finder_line_345
+    jsr .do_0
+    jsr .inc_line
+    jsr .do_finder_line_345
+    jsr .do_0
+    jsr .inc_line
+    jsr .do_finder_line_2
+    jsr .do_0
+    jsr .inc_line
+    jsr .do_finder_line_1
+    jsr .do_0
+    
+    rts
+    
+.do_finder_square_right
+    jsr .do_0
+    jsr .do_finder_line_1
+    jsr .inc_line
+    jsr .do_0
     jsr .do_finder_line_2
     jsr .inc_line
+    jsr .do_0
+    jsr .do_finder_line_345
+    jsr .inc_line
+    jsr .do_0
+    jsr .do_finder_line_345
+    jsr .inc_line
+    jsr .do_0
+    jsr .do_finder_line_345
+    jsr .inc_line
+    jsr .do_0
+    jsr .do_finder_line_2
+    jsr .inc_line
+    jsr .do_0
     jsr .do_finder_line_1
     
     rts
     
+.do_0
+    ldy #0
+    ldx #0
+    lda #0
+    jsr k_indsta
+    
+    rts
     
     ; first line
 .do_finder_line_1
@@ -186,7 +230,7 @@ write_patterns
     
     ; second line
 .do_finder_line_2
-    jsr .inc_line
+    
     ldy #7
 -   ldx #0
     lda .modules_1000001-1,y
@@ -198,19 +242,13 @@ write_patterns
     
     ; lines 3-5
 .do_finder_line_345
-    lda #3
-    sta z_counter1
     
---  jsr .inc_line
     ldy #7
 -   ldx #0
     lda .modules_1011101-1,y
     jsr k_indsta
     dey
     bne -
-    
-    dec z_counter1
-    bne --
     
     rts
     
