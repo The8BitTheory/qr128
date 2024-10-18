@@ -37,6 +37,8 @@ rsmuly =       $03ef   ; store and recover y-reg here when calling rsmultiply
 
 ;*= $1300
 rs
+    jsr set_location_datastream
+    
     clc
     lda z_location      ; z_location is where we're reading from (start of datastream)
     adc streamLength

@@ -26,12 +26,51 @@ m_128            = $03ec  ;holds the value 128. used for BIT operation
 ; z_location is matrix
 ; z_location2 is datastream
 
-!to "stream2mod.bin",cbm
+;!to "stream2mod.bin",cbm
 ;*= $1306
 
 stream_to_module
 !zone stream2module
-    jsr .set_location
+
+    ;should still be set from patterns.a
+    ;lda #z_location   ; setup for indsta
+    ;sta $02b9
+    
+;    jsr .set_start_location
+    lda #0
+    sta m_endAddress
+    sta m_endAddress+1
+    
+    lda #<data
+    sta z_location2
+    sta m_startAddress
+    lda #>data
+    sta z_location2+1
+    sta m_startAddress+1
+            
+    lda z_location2
+    clc
+    adc matrixSize
+    sta z_location2
+    sta z_location
+    sta m_endAddress
+    bcc +
+    inc z_location2+1
+    
++   lda z_location2+1
+    clc
+    adc matrixSize+1
+    sta z_location2+1
+    sta z_location+1
+    sta m_endAddress+1
+    
+    lda z_location
+    sec
+    sbc #1
+    sta z_location
+    bcs +
+    dec z_location+1
+
     
     ldx size
     dex
@@ -60,9 +99,9 @@ stream_to_module
     jmp ++
 +   lda #%01000000                 ;bit 6 means data-module. bit 0 clear means light module
     
-++  ;sty z_counter1
+++  sty z_counter1
     jsr writeAndAdvance
-    ;ldy z_counter1
+    ldy z_counter1
 
     lda z_temp
     lsr
@@ -78,9 +117,22 @@ stream_to_module
     
 ; writes the accumulator to the current write offset and then calculates the next offset position
 writeAndAdvance
+    ; temp-store new value of matrix-field
+    sta z_counter2
+    
+    ; load current value of matrix-field into Acc
     ldx #0
-    ora (z_location,x)
-    sta (z_location,x)
+    ldy #0
+    lda #z_location
+    jsr k_indfet
+    
+    ; OR the values
+    ora z_counter2
+
+    ; store the value in the matrix
+    ldx #0
+    ldy #0
+    jsr k_indsta
     
     ; where are we in relation to column 6? (col 6 is skipped and it changes even-odd behavior of offset pos calc)
     lda m_curCol
@@ -247,44 +299,5 @@ writeAndAdvance
     dec m_curCol
     
     jmp .endAdvWriteIdx2
-    
-    
-    
-.set_location
-    lda #0
-    sta m_endAddress
-    sta m_endAddress+1
-    
-    lda #<data
-    sta z_location2
-    sta m_startAddress
-    lda #>data
-    sta z_location2+1
-    sta m_startAddress+1
-            
-    lda z_location2
-    clc
-    adc matrixSize
-    sta z_location2
-    sta z_location
-    sta m_endAddress
-    bcc +
-    inc z_location2+1
-    
-+   lda z_location2+1
-    clc
-    adc matrixSize+1
-    sta z_location2+1
-    sta z_location+1
-    sta m_endAddress+1
-    
-    lda z_location
-    sec
-    sbc #1
-    sta z_location
-    bcs +
-    dec z_location+1
-    
-+   rts
     
     

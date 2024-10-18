@@ -20,6 +20,13 @@ p2a
 ;  sta length
 ;  stx location
 ;  sty location+1
+
+
+    ; output address for petscii-to-ascii conversion
+    ;ldx #<$0b00
+    ;stx z_location2
+    ;ldx #>$0b00
+    ;stx z_location2+1
   
   ldy #0
   sei

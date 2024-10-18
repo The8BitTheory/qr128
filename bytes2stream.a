@@ -8,14 +8,7 @@
 bytes_to_stream
 ; calculate start address of datastream (matrix end)
 
-    clc
-    lda #<data
-    adc matrixSize
-    sta z_location
-    
-    lda #>data
-    adc matrixSize+1
-    sta z_location+1
+    jsr set_location_datastream
 
 ; write mode byte and first nybble of length byte
     ldx #z_location

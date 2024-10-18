@@ -93,11 +93,16 @@ write_patterns
 .do_finder
 
     ;top-left
-    jsr .set_location_minus_1
+    lda #<.modules_finder_left
+    sta z_location2
+    lda #>.modules_finder_left
+    sta z_location2+1
+    
+    jsr .set_location
     jsr .do_finder_square
+    jsr .do_horizontal_eight_zeroes
 
     ;bottom-left
-    jsr .set_location_minus_1
     
     ;calculate starting position of bottom-left pattern (=matrixSize-7*size)
     ; subtracting 7 lines from end of matrix is faster than adding size-7 lines to the start of the matrix
@@ -106,7 +111,7 @@ write_patterns
     
     ; now, subtract 7 lines from z_location
     lda z_location
-    ldy #7
+    ldy #8
 -   sec
     sbc size
     sta z_location
@@ -116,20 +121,19 @@ write_patterns
 +   dey
     bne -
     
-    lda z_location
-    sec
-    sbc #1
-    sta z_location
-    bcs +
-    dec z_location+1
-        
-+   jsr .do_finder_square
+    jsr .do_horizontal_eight_zeroes
+    jsr .inc_line
+    jsr .do_finder_square
     
     
     ;top-right
-    jsr .set_location_minus_1
+    lda #<.modules_finder_right
+    sta z_location2
+    lda #>.modules_finder_right
+    sta z_location2+1
     
-    ;calculate starting position of top-right pattern(=matrixStart + size-7)
+    ;calculate starting position of top-right pattern(=matrixStart + size-8)
+    jsr .set_location
     lda z_location
     clc
     adc size
@@ -143,14 +147,28 @@ write_patterns
     bcs +
     dec z_location+1
     
-+   jsr .do_finder_square_right
++   jsr .do_finder_square
+    jsr .do_horizontal_eight_zeroes
 
     ; we're done. if contentlength > 17, draw the alignment pattern. else, return
     lda contentLength
     cmp #18
-    bcs .do_alignment_pattern
+    bcs +
     rts
     
++   jmp .do_alignment_pattern
+
+
+.do_horizontal_eight_zeroes
+    ldy #8    
+    
+-   lda #0
+    ldx #0
+    jsr k_indsta
+    dey
+    bne -
+
+    rts
 
     ;this prints the following pattern
     ;XXXXXXX
@@ -161,97 +179,42 @@ write_patterns
     ;X     X
     ;XXXXXXX
 .do_finder_square
-    jsr .do_finder_line_1
-    jsr .do_0
-    jsr .inc_line
-    jsr .do_finder_line_2
-    jsr .do_0
-    jsr .inc_line
-    jsr .do_finder_line_345
-    jsr .do_0
-    jsr .inc_line
-    jsr .do_finder_line_345
-    jsr .do_0
-    jsr .inc_line
-    jsr .do_finder_line_345
-    jsr .do_0
-    jsr .inc_line
-    jsr .do_finder_line_2
-    jsr .do_0
-    jsr .inc_line
-    jsr .do_finder_line_1
-    jsr .do_0
     
-    rts
-    
-.do_finder_square_right
-    jsr .do_0
-    jsr .do_finder_line_1
-    jsr .inc_line
-    jsr .do_0
-    jsr .do_finder_line_2
-    jsr .inc_line
-    jsr .do_0
-    jsr .do_finder_line_345
-    jsr .inc_line
-    jsr .do_0
-    jsr .do_finder_line_345
-    jsr .inc_line
-    jsr .do_0
-    jsr .do_finder_line_345
-    jsr .inc_line
-    jsr .do_0
-    jsr .do_finder_line_2
-    jsr .inc_line
-    jsr .do_0
-    jsr .do_finder_line_1
-    
-    rts
-    
-.do_0
     ldy #0
-    ldx #0
-    lda #0
-    jsr k_indsta
-    
-    rts
-    
-    ; first line
-.do_finder_line_1
-    ldy #7
+    sty z_counter1          ; which line are we writing (ie which .module_finder_x offset are we reading from?)
 
--   ldx #0
-    lda #1
+--  lda #%10000000
+    sta z_temp
+
+    ldy #0                  ; which module of the line are we writing to?
+    sty z_counter2
+    
+-   ldy z_counter1
+    lda (z_location2),y
+    
+    bit z_temp
+    beq +
+    lda #%00000001                 ;bit 0 set means dark module
+    jmp ++
++   lda #%00000000
+
+++  ldx #0
+    ldy z_counter2
     jsr k_indsta
-    dey
+    iny
+    sty z_counter2
+    lda z_temp
+    lsr
+    sta z_temp
     bne -
-    
+        
+    jsr .inc_line
+    inc z_counter1
+    lda z_counter1
+    cmp #7
+    bne --
+
     rts
-    
-    ; second line
-.do_finder_line_2
-    
-    ldy #7
--   ldx #0
-    lda .modules_1000001-1,y
-    jsr k_indsta
-    dey
-    bne -
-    
-    rts
-    
-    ; lines 3-5
-.do_finder_line_345
-    
-    ldy #7
--   ldx #0
-    lda .modules_1011101-1,y
-    jsr k_indsta
-    dey
-    bne -
-    
-    rts
-    
     
 .do_alignment_pattern
     ; the alignment pattern is 5x5 and always at location 28x28 (size - 9)
@@ -275,54 +238,48 @@ write_patterns
 +   dey
     bne -
     
-    ; finally, subtract 10 from z_location (usually 9, but we re-use another method)
+    ; finally, subtract 12 from z_location (usually 9, but we re-use another method)
     lda z_location
     sec
-    sbc #10
+    sbc #12
     sta z_location
     bcs +
     dec z_location+1
 
-+   jsr .do_alignment_line_1
-    jsr .do_alignment_line_2
-    jsr .do_alignment_line_3
-    jsr .do_alignment_line_2
-    jsr .inc_line
-    jsr .do_alignment_line_1
+    ;------------------------
+    ; draw the pattern
+    ;-----------------------
++   ldx #0
+    stx z_counter1          ; which line are we writing (ie which .module_alignment offset are we reading from?)
 
-    jmp .end
-    
-.do_alignment_line_1
-    ldy #5
+--  lda #%00010000
+    sta z_temp
 
--   ldx #0
-    lda #1
-    jsr k_indsta
-    dey
-    bne -
+    ldy #3                  ; which module of the line are we writing to?
     
-    rts
+-   ldx z_counter1
+    lda .modules_alignment,x
     
-.do_alignment_line_2
-    jsr .inc_line
-    ldy #5
--   ldx #0
-    lda .modules_10001-1,y
-    jsr k_indsta
-    dey
-    bne -
-    
-    rts
+    bit z_temp
+    beq +
+    lda #%00000001                 ;bit 0 set means dark module
+    jmp ++
++   lda #%00000000
 
-.do_alignment_line_3
-    jsr .inc_line
-    ldy #5
--   ldx #0
-    lda .modules_10101-1,y
+++  ldx #0
     jsr k_indsta
-    dey
+    iny
+    lda z_temp
+    lsr
+    sta z_temp
     bne -
-    
+        
+    jsr .inc_line
+    inc z_counter1
+    lda z_counter1
+    cmp #5
+    bne --
+
     rts
 
 .inc_line
@@ -344,18 +301,6 @@ write_patterns
     sta z_location+1
     rts
 
-.set_location_minus_1
-    jsr .set_location
-    
-    lda z_location
-    sec
-    sbc #1
-    sta z_location
-    bcs +
-    dec z_location+1
-    
-+   rts
-
 .set_location_end
     jsr .set_location
     
@@ -372,19 +317,8 @@ write_patterns
     sta z_location+1
     
     rts
-    
-.end
-    rts
   
 
-; first value is always skipped. set to invalid value
-.modules_1000001 !byte 1,0,0,0,0,0,1
-.modules_1011101 !byte 1,0,1,1,1,0,1
-.modules_10001   !byte 1,0,0,0,1
-.modules_10101   !byte 1,0,1,0,1
-
-
-
-
-
-
+.modules_finder_left  !byte %11111110,%10000010,%10111010,%10111010,%10111010,%10000010,%11111110
+.modules_finder_right !byte %01111111,%01000001,%01011101,%01011101,%01011101,%01000001,%01111111,%00000000
+.modules_alignment    !byte %00011111,%00010001,%00010101,%00010001,%00011111

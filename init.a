@@ -16,8 +16,7 @@ init
     stx z_location2
     ldx #>data
     stx z_location2+1
-    
-    
+        
 ;calculate version.
     ; decreasing the version boundaries by one byte, because of mode and length bits (eg lower than 108)
     ; max supported version is 5 -> 108 bytes -2=106

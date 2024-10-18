@@ -13,6 +13,7 @@ z_counter1  = $0a     ;ENDCHR
 z_counter2  = $0c     ;VERCK
 
 *= $1300
+;*= $C000
 
     jmp init
     jmp p2a
@@ -34,6 +35,17 @@ showdata
     lda size
     sta $03ea
     
+    rts
+    
+set_location_datastream
+    clc
+    lda #<data
+    adc matrixSize
+    sta z_location
+    
+    lda #>data
+    adc matrixSize+1
+    sta z_location+1
     
     rts
     
