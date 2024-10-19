@@ -33,10 +33,9 @@ stream_to_module
 !zone stream2module
 
     ;should still be set from patterns.a
-    ;lda #z_location   ; setup for indsta
-    ;sta $02b9
+;    lda #z_location   ; setup for indsta
+;    sta $02b9
     
-;    jsr .set_start_location
     lda #0
     sta m_endAddress
     sta m_endAddress+1
@@ -70,9 +69,9 @@ stream_to_module
     sta z_location
     bcs +
     dec z_location+1
-
     
-    ldx size
+    
++   ldx size
     dex
     stx m_curCol
     
@@ -88,19 +87,23 @@ stream_to_module
 
     ; walk over bytes of datastream, split them into bits and write these as modules
     ldy #0
+    sty z_counter1
     
 --  ldx #128
     stx z_temp              ;use for bit-comparison and shift left
   
--   lda (z_location2),y
+-   ldx #0
+    ldy z_counter1
+    lda #z_location2
+    jsr k_indfet
     bit z_temp
     beq +
     lda #%01000001                 ;bit 6 set means data-module. bit 0 set means dark module
     jmp ++
 +   lda #%01000000                 ;bit 6 means data-module. bit 0 clear means light module
     
-++  sty z_counter1
-    jsr writeAndAdvance
+    
+++  jsr writeAndAdvance
     ldy z_counter1
 
     lda z_temp
@@ -109,6 +112,7 @@ stream_to_module
     bne -
     
     iny
+    sty z_counter1
     cpy streamLength
     bne --
     
@@ -121,13 +125,11 @@ writeAndAdvance
     sta z_counter2
     
     ; load current value of matrix-field into Acc
-    ldx #0
-    ldy #0
-    lda #z_location
-    jsr k_indfet
+    jsr .do_indfet
     
     ; OR the values
     ora z_counter2
+    and #$7f
 
     ; store the value in the matrix
     ldx #0
@@ -141,6 +143,14 @@ writeAndAdvance
     jmp .advLt6     ;else: col is lower than 6
                     ;if col equals 6, we also handle it as lower than 6, as this will skip the column
 
+    rts
+    
+.do_indfet
+    ldx #0
+    ldy #0
+    lda #z_location
+    jsr k_indfet
+    
     rts
 
 ; do we advance in a column > 6 or <= 6?
@@ -168,8 +178,9 @@ writeAndAdvance
 +   dec m_curCol
 
     ; check value of the new output location. if it's not 128, it's occupied already and we need to keep advancing
-    ldx #0
-    lda (z_location,x)
+    jsr .do_indfet
+;    ldx #0
+;    lda (z_location,x)
     bit m_128
     beq .advWriteIdx2
 
@@ -213,9 +224,10 @@ writeAndAdvance
 
 .endAdvWriteIdx2
     inc m_curCol
-    
-    ldx #0
-    lda (z_location,x)
+ 
+    jsr .do_indfet
+;    ldx #0
+;    lda (z_location,x)
     bit m_128         ;128 means, new location is free to write
     beq .advWriteIdx1 
     
