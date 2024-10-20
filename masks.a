@@ -150,9 +150,9 @@ calc_xor_masks
     jsr .clean_format_modules_hor
 ;    jmp +
 
-    lda #<.pattern100
+    lda .pattern100
     sta z_location2
-    lda #>.pattern100
+    lda .pattern100+1
     sta z_location2+1
     
     lda #64
@@ -161,9 +161,9 @@ calc_xor_masks
     sta m_bit
     jsr .write_format_modules_hor
     
-    lda #<.pattern101
+    lda .pattern101
     sta z_location2
-    lda #>.pattern101
+    lda .pattern101+1
     sta z_location2+1
     
     lda #64
@@ -172,9 +172,9 @@ calc_xor_masks
     sta m_bit
     jsr .write_format_modules_hor
     
-    lda #<.pattern110
+    lda .pattern110
     sta z_location2
-    lda #>.pattern110
+    lda .pattern110+1
     sta z_location2+1
 
     lda #64
@@ -183,9 +183,9 @@ calc_xor_masks
     sta m_bit
     jsr .write_format_modules_hor
 
-    lda #<.pattern111
+    lda .pattern111
     sta z_location2
-    lda #>.pattern111
+    lda .pattern111+1
     sta z_location2+1
 
     lda #64
@@ -222,8 +222,9 @@ calc_xor_masks
     ; initialize working variables
     lda #128
     sta z_temp
-    ldx #1
     
+    lda z_location2+1
+    sta z_location2
 -   jsr .write_format_module
     
     iny
@@ -247,7 +248,7 @@ calc_xor_masks
     rts
 
 .write_format_module
-    lda (z_location2,x)
+    lda z_location2
     bit z_temp
     beq +
     lda m_bit                 ;bit 6 set means data-module. bit 0 set means dark module
