@@ -12,7 +12,7 @@ write_patterns
   
 !zone write_patterns
 
-    jsr .set_location
+    jsr set_location_to_data
     
     ;--------------------
     ; horizontal timing pattern
@@ -54,7 +54,7 @@ write_patterns
     ;------------------
 .do_vertical
     ;walk to column 6, row 0
-    jsr .set_location
+    jsr set_location_to_data
     
     clc
     lda z_location
@@ -98,7 +98,7 @@ write_patterns
     lda #>.modules_finder_left
     sta z_location2+1
     
-    jsr .set_location
+    jsr set_location_to_data
     jsr .do_finder_square
     jsr .dec_location_by_1
     ldy #8
@@ -143,7 +143,7 @@ write_patterns
     sta z_location2+1
     
     ;calculate starting position of top-right pattern(=matrixStart + size-8)
-    jsr .set_location
+    jsr set_location_to_data
     lda z_location
     clc
     adc size
@@ -162,9 +162,9 @@ write_patterns
     jsr .dec_location_by_1
     ldy #8
     jsr .do_horizontal_y_zeroes
-    jsr .inc_line
-    ldy #8
-    jsr .do_horizontal_y_zeroes
+;    jsr .inc_line
+;    ldy #8
+;    jsr .do_horizontal_y_zeroes
 
     ; we're done. if contentlength > 17, draw the alignment pattern. else, return
     lda contentLength
@@ -335,17 +335,8 @@ write_patterns
     
 +   rts
 
-
-    ; put first memory position of matrix into z_location
-.set_location
-    lda #<data
-    sta z_location
-    lda #>data
-    sta z_location+1
-    rts
-
 .set_location_end
-    jsr .set_location
+    jsr set_location_to_data
     
     lda z_location
     clc
@@ -363,5 +354,5 @@ write_patterns
   
 
 .modules_finder_left  !byte %11111110,%10000010,%10111010,%10111010,%10111010,%10000010,%11111110
-.modules_finder_right !byte %01111111,%01000001,%01011101,%01011101,%01011101,%01000001,%01111111,%00000000
+.modules_finder_right !byte %01111111,%01000001,%01011101,%01011101,%01011101,%01000001,%01111111
 .modules_alignment    !byte %00011111,%00010001,%00010101,%00010001,%00011111

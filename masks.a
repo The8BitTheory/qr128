@@ -5,13 +5,11 @@
 !zone masks
 m_xpos      = $03e4
 m_ypos      = $03e5
+m_bit       = $03e6
 
 calc_xor_masks
 
-    lda #<data
-    sta z_location
-    lda #>data
-    sta z_location+1
+    jsr set_location_to_data
   
     ; initialize matrix with value 128 (highest bit set)
     
@@ -29,21 +27,13 @@ calc_xor_masks
     dex
     beq ++
 
-    clc
-    lda z_location
-    adc size
-    sta z_location
-    bcc +
-    inc z_location+1
+    jsr .inc_row
     
-+   jmp --
+    jmp --
 
   
     ; calc xor masks. reset z_location to start of matrix
-++  lda #<data
-    sta z_location
-    lda #>data
-    sta z_location+1
+++  jsr set_location_to_data
     
     ldx #0
     stx m_xpos
@@ -92,7 +82,7 @@ calc_xor_masks
     inc m_ypos            ; increase row
     lda m_ypos
     cmp size              ; if passed last row, we're done
-    beq .end
+    beq .draw_format_patterns
     
     ; last row not passed
     clc
@@ -106,10 +96,15 @@ calc_xor_masks
     ; last column not passed
 +   jmp -
 
-.end
-    rts
-
-
+.inc_row
+    clc
+    lda z_location
+    adc size
+    sta z_location
+    bcc +
+    inc z_location+1
+    
++   rts
 
 .write_to_mask
     ldy m_xpos
@@ -127,4 +122,176 @@ calc_xor_masks
     
 +   rts
 
- 
+
+; format patterns are 15 modules large. we use 15 bits for that, defined at the bottom of this file
+; first (highest) 2 modules represent the error correction layer. we restrict ourselves to Low, so these are always 1
+; next 3 modules represent the chosen xor mask
+; the remaining 10 modules are pre-calculated, based on the first 5 modules
+; if this program supported all error-correction-levels, we'd need these pre-calcs also per EC-level
+
+; format patterns are drawn horizontally in row 8 (left to right), vertically in column 8 (bottom to top)
+; they "extend" the area around the finder patterns and are interrupted by timing patterns and actual content modules
+; this leads to segmented printing of these.
+; horizontally: 6 modules, 1 spare, 1 module(not 2), the remaining 8 below the finder pattern on the right-hand side
+; vertically: 7 modules, then 2 modules in rows 8 and 7, the rest in rows 5 to zero
+
+; we just write these patterns as mask-bits (bit 6 set). as they are always in "read-only" areas (no content modules), xor should
+; just bring these up correctly as part of the regular masking process
+.draw_format_patterns
+    
+    jsr set_location_to_data
+
+    ;go to row 8 (0-based)
+    ldy #8
+-   jsr .inc_row
+    dey
+    bne -
+    
+    jsr .clean_format_modules_hor
+
+    lda #<.pattern100
+    sta z_location2
+    lda #>.pattern100
+    sta z_location2+1
+    
+    lda #64
+    sta z_temp
+    lda .bit1
+    sta m_bit
+    jsr .write_format_modules_hor
+    
+    lda #<.pattern101
+    sta z_location2
+    lda #>.pattern101
+    sta z_location2+1
+    
+    lda #64
+    sta z_temp
+    lda .bit2
+    sta m_bit
+    jsr .write_format_modules_hor
+    
+    lda #<.pattern110
+    sta z_location2
+    lda #>.pattern110
+    sta z_location2+1
+
+    lda #64
+    sta z_temp
+    lda .bit3
+    sta m_bit
+    jsr .write_format_modules_hor
+
+    lda #<.pattern111
+    sta z_location2
+    lda #>.pattern111
+    sta z_location2+1
+
+    lda #64
+    sta z_temp
+    lda .bit4
+    sta m_bit
+    jsr .write_format_modules_hor
+
+    
+.end
+    rts
+
+.write_format_modules_hor
+    ldy #0
+    
+-   jsr .write_format_module
+    
+    iny
+    jsr .shift_temp_right
+    cmp #1
+    bne +
+    iny
+    jmp -
+    
++   cmp #0
+    bne -
+    
+    ; write second byte to right-hand-side
+    ; increase y to right-border minus 8
+    jsr .set_y_to_right_minus_8
+    
+    ; initialize working variables
+    lda #128
+    sta z_temp
+    ldx #1
+    
+-   jsr .write_format_module
+    
+    iny
+    jsr .shift_temp_right
+    bne -
+    
+    rts
+    
+.set_y_to_right_minus_8
+    sec
+    lda size
+    sbc #8
+    tay
+    rts
+
+    
+.shift_temp_right
+    lda z_temp
+    lsr
+    sta z_temp
+    rts
+
+.write_format_module
+    lda (#z_location2,x)
+    bit z_temp
+    beq +
+    lda m_bit                 ;bit 6 set means data-module. bit 0 set means dark module
+    jmp ++
++   lda #%01000000
+    
+    ; load current value of matrix-field into Acc
+++  ora (z_location),y
+    sta (z_location),y
+    
+    rts
+
+
+.clean_format_modules_hor
+    ldy #0
+-   lda #0
+    sta (z_location),y
+    
+    iny
+    cpy #6
+    bne +
+    iny
+    jmp -
+    
++   cpy #8
+    bne -
+    
+    ; write second byte to right-hand-side
+    ; increase y to right-border minus 8
+    jsr .set_y_to_right_minus_8
+        
+-   lda #0
+    sta (z_location),y
+    
+    iny
+    cpy size
+    bne -
+    
+    rts
+    
+    
+
+.pattern100 !byte %01110010, %11110011
+.pattern101 !byte %01110111, %11000100 
+.pattern110 !byte %01111000, %10011101
+.pattern111 !byte %01111101, %10101010
+.bit1       !byte %01000010
+.bit2       !byte %01000100
+.bit3       !byte %01001000
+.bit4       !byte %01010000
