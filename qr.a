@@ -56,6 +56,16 @@ set_location_to_data
     sta z_location+1
     rts
     
+inc_line
+    lda z_location
+    clc
+    adc size
+    sta z_location
+    bcc +
+    inc z_location+1
+    
++   rts
+    
 size            !byte 0   ;size of one axis-length of the final matrix
 contentLength   !byte 0
 eccLength       !byte 0   ;nr of ecc bytes to generate

@@ -148,6 +148,7 @@ calc_xor_masks
     bne -
     
     jsr .clean_format_modules_hor
+;    jmp +
 
     lda #<.pattern100
     sta z_location2
@@ -192,6 +193,8 @@ calc_xor_masks
     lda .bit4
     sta m_bit
     jsr .write_format_modules_hor
+    
+    jsr .clean_format_modules_vert
 
     
 .end
@@ -244,7 +247,7 @@ calc_xor_masks
     rts
 
 .write_format_module
-    lda (#z_location2,x)
+    lda (z_location2,x)
     bit z_temp
     beq +
     lda m_bit                 ;bit 6 set means data-module. bit 0 set means dark module
@@ -266,6 +269,8 @@ calc_xor_masks
     iny
     cpy #6
     bne +
+    lda #1
+    sta (z_location),y
     iny
     jmp -
     
@@ -285,6 +290,81 @@ calc_xor_masks
     
     rts
     
+; vertical modules start in the last row, column 8 (0-based) and go bottom up.
+; 7 modules (first pattern byte) next to bottom finder pattern
+; 8 modules (second pattern byte) next to top finder pattern (row 8, 0-based), starting. 2 modules, skip 1, 6 modules (ending in row 0)
+.clean_format_modules_vert
+    ;clear first pattern byte area (bottom)
+    jsr set_location_datastream ;this equals end of matrix+1
+    
+    sec
+    lda z_location
+    sbc size
+    sta z_location
+    bcs +
+    dec z_location+1
+    
++   clc
+    adc #8    ;add 9, because we were 1 right of the matrix
+    sta z_location
+    bcc +
+    inc z_location+1
+    
+    
+    
++   ldy #7
+    ldx #0
+-   lda #0
+    sta (z_location,x)
+    
+    jsr .dec_line
+    dey
+    bne -
+    
+    lda #1
+    sta (z_location,x)
+    
+    
+    ; clear 7 from top-down (that's backwards to how we would write the modules)
+    jsr set_location_to_data
+    clc
+    lda z_location
+    adc #8
+    sta z_location
+    bcc +
+    inc z_location+1
+    
+    ; read 2nd format pattern byte backwards, ie write from top to bottom
++   ;ldx #0   ;already set to zero from previous pattern byte
+    ldy #9
+
+-   lda #0
+    sta (z_location,x)
+    jsr inc_line
+    dey
+    
+    cpy #3
+    bne +
+    lda #1
+    sta (z_location,x)
+    jsr inc_line
+    dey
+    jmp -
+    
++   cpy #0
+    bne -
+        
+    rts
+    
+.dec_line
+    lda z_location
+    sec
+    sbc size
+    sta z_location
+    bcs +
+    dec z_location+1
+    
++   rts
     
 
 .pattern100 !byte %01110010, %11110011
