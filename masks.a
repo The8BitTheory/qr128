@@ -195,8 +195,6 @@ calc_xor_masks
     
     jsr .clean_format_modules_vert
 
-    
-.end
     rts
 
 .write_format_modules_hor
@@ -299,7 +297,7 @@ calc_xor_masks
     
     jsr dec_line
     
-+   clc
+    clc
     adc #8    ;add 9, because we were 1 right of the matrix
     sta z_location
     bcc +

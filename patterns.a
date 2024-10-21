@@ -194,7 +194,7 @@ write_patterns
     
     jsr dec_line
     
-+   dey
+    dey
     bne -
     
     rts
@@ -271,7 +271,7 @@ write_patterns
     ldy #8
 -   jsr dec_line
 
-+   dey
+    dey
     bne -
     
     ; finally, subtract 12 from z_location (usually 9, but we re-use another method)

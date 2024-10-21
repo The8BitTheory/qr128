@@ -201,7 +201,7 @@ writeAndAdvance
     ;z_location2=z_location2-size+1
     jsr dec_line
 
-+   clc
+    clc
 ;    lda z_location
     adc #1
     sta z_location
@@ -292,7 +292,7 @@ writeAndAdvance
     jsr dec_line
     
     sec
-+   sbc #2
+    sbc #2
     sta z_location
     bcs +
     dec z_location+1
