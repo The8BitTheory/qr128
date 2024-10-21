@@ -11,26 +11,28 @@ bytes_to_stream
     jsr set_location_datastream
 
 ; write mode byte and first nybble of length byte
-    ldx #z_location
-    stx $02b9
+;    ldx #z_location
+;    stx $02b9
     ldy #0
     sty z_counter1    ;counter1 holds the datastream index (ie write index)
     sty z_counter2    ;counter2 holds the input index (ie read index) (stop-condition: cmp contentLength)
         
     lda #64
     sta z_temp
-    ldx #0
-    jsr k_indsta
+    sta (z_location),y
+;    ldx #0
+;    jsr k_indsta
     
     lda contentLength
     jsr writeToStream
     inc contentLength   ;increase to make stop-condition easier to check
 
 ; write content bytes
--   ldx #0
-    ldy z_counter2
-    lda #z_location2
-    jsr k_indfet
+-   ldy z_counter2
+    ;ldx #0
+    ;lda #z_location2
+    ;jsr k_indfet
+    lda (z_location2),y
     
     jsr writeToStream ;increases y to next write index (z_counter1)
     cpy contentLength
@@ -40,9 +42,10 @@ bytes_to_stream
     jmp -
     
     ; write last byte. lower nybble is left to zero
-+   ldx #0
-    ldy z_counter1
-    jsr k_indsta    ;Acc should still hold z_temp, $02b9 should still hold z_location
++   ldy z_counter1
+    sta (z_location),y
+    ;ldx #0
+    ;jsr k_indsta    ;Acc should still hold z_temp, $02b9 should still hold z_location
     iny
     sty z_counter1
     
@@ -61,25 +64,28 @@ bytes_to_stream
     
 
     ;y is still current with z_counter1 at the position of the last content byte
--   ldx #0
+-   ;ldx #0
     lda #$ec
-    jsr k_indsta
+    sta (z_location),y
+    ;jsr k_indsta
     iny
     dec z_counter2
     beq +
 
-    ldx #0
+    ;ldx #0
     lda #$11
-    jsr k_indsta
+    sta (z_location),y
+    ;jsr k_indsta
     iny
     dec z_counter2
     
     bne -
     
     ;finally, write one zero byte
-+   ldx #0
-    lda #0
-    jsr k_indsta
++   lda #0
+    sta (z_location),y
+    ;ldx #0
+    ;jsr k_indsta
     iny
     sta z_counter1    ; z_counter1 is used by the next routine (ecc-calculation) to have the right write-offset
     
@@ -100,11 +106,11 @@ writeToStream
     lsr
     ora z_temp
     
-    ldx #0
     ldy z_counter1
+    sta (z_location),y
     ; a holds the ORed value
-    ; $02b9 still holds z_location
-    jsr k_indsta
+    ;ldx #0
+    ;jsr k_indsta
     
     iny
     sty z_counter1

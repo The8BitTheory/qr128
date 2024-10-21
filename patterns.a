@@ -34,17 +34,19 @@ write_patterns
     sta $02b9
     
     ldy #0
--   ldx #0
-    lda #1
-    jsr k_indsta
+-   lda #1
+    sta (z_location),y
+    ;ldx #0
+    ;jsr k_indsta
     iny
     
     cpy size          ; size is always an odd number, we only need to check for completeness here.
     beq .do_vertical
     
-    ldx #0
     lda #0
-    jsr k_indsta
+    sta (z_location),y
+    ;ldx #0
+    ;jsr k_indsta
     iny
     jmp -
   
@@ -66,9 +68,10 @@ write_patterns
 +   ldy #0       
     sty z_counter1
 -   ldy #0
-    ldx #0
     lda #1
-    jsr k_indsta
+    sta (z_location),y
+    ;ldx #0
+    ;jsr k_indsta
     ldy z_counter1
     iny
     
@@ -76,14 +79,15 @@ write_patterns
     beq .do_finder
     
     sty z_counter1      ; could do inc z_counter1 as well, but that takes 5 cycles (sty takes 3)
-    jsr .inc_line
+    jsr inc_line
     
     ldy #0
-    ldx #0
     lda #0
-    jsr k_indsta
+    sta (z_location),y
+    ;ldx #0
+    ;jsr k_indsta
     inc z_counter1      ; now inc makes sense. 5 cycles over (3 and 2 and 3 for ldy iny sty)
-    jsr .inc_line
+    jsr inc_line
     jmp -
     
     ;---------------
@@ -132,7 +136,7 @@ write_patterns
     sta z_location
     bcc +
     inc z_location+1
-+   jsr .inc_line
++   jsr inc_line
     jsr .do_finder_square
     
     
@@ -162,7 +166,7 @@ write_patterns
     jsr .dec_location_by_1
     ldy #8
     jsr .do_horizontal_y_zeroes
-;    jsr .inc_line
+;    jsr inc_line
 ;    ldy #8
 ;    jsr .do_horizontal_y_zeroes
 
@@ -178,8 +182,9 @@ write_patterns
 .do_horizontal_y_zeroes
 
 -   lda #0
-    ldx #0
-    jsr k_indsta
+    sta (z_location),y
+    ;ldx #0
+    ;jsr k_indsta
     dey
     bne -
 
@@ -187,8 +192,9 @@ write_patterns
     
 .do_vertical_y_zeroes
 -   lda #0
-    ldx #0
-    jsr k_indsta
+    sta (z_location),y
+    ;ldx #0
+    ;jsr k_indsta
     
     sec
     lda z_location
@@ -241,9 +247,10 @@ write_patterns
     jmp ++
 +   lda #%00000000
 
-++  ldx #0
-    ldy z_counter2
-    jsr k_indsta
+++  ldy z_counter2
+    sta (z_location),y
+    ;ldx #0
+    ;jsr k_indsta
     iny
     sty z_counter2
     lda z_temp
@@ -251,7 +258,7 @@ write_patterns
     sta z_temp
     bne -
         
-    jsr .inc_line
+    jsr inc_line
     inc z_counter1
     lda z_counter1
     cmp #7
@@ -309,31 +316,22 @@ write_patterns
     jmp ++
 +   lda #%00000000
 
-++  ldx #0
-    jsr k_indsta
+++  sta (z_location),y
+    ;ldx #0
+    ;jsr k_indsta
     iny
     lda z_temp
     lsr
     sta z_temp
     bne -
         
-    jsr .inc_line
+    jsr inc_line
     inc z_counter1
     lda z_counter1
     cmp #5
     bne --
 
     rts
-
-.inc_line
-    lda z_location
-    clc
-    adc size
-    sta z_location
-    bcc +
-    inc z_location+1
-    
-+   rts
 
 .set_location_end
     jsr set_location_to_data

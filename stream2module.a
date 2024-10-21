@@ -92,10 +92,11 @@ stream_to_module
 --  ldx #128
     stx z_temp              ;use for bit-comparison and shift left
   
--   ldx #0
-    ldy z_counter1
-    lda #z_location2
-    jsr k_indfet
+-   ldy z_counter1
+    lda (z_location2),y
+    ;ldx #0
+    ;lda #z_location2
+    ;jsr k_indfet
     bit z_temp
     beq +
     lda #%01000001                 ;bit 6 set means data-module. bit 0 set means dark module
@@ -132,9 +133,10 @@ writeAndAdvance
     and #$7f
 
     ; store the value in the matrix
-    ldx #0
     ldy #0
-    jsr k_indsta
+    sta (z_location),y
+    ;ldx #0
+    ;jsr k_indsta
     
     ; where are we in relation to column 6? (col 6 is skipped and it changes even-odd behavior of offset pos calc)
     lda m_curCol
@@ -146,10 +148,11 @@ writeAndAdvance
     rts
     
 .do_indfet
-    ldx #0
     ldy #0
-    lda #z_location
-    jsr k_indfet
+    lda (z_location),y
+    ;ldx #0
+    ;lda #z_location
+    ;jsr k_indfet
     
     rts
 

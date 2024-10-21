@@ -7,7 +7,7 @@
 ;!source <cbm/c128/kernal.a>
 
 k_indfet = $ff74
-k_indsta = $ff77
+;k_indsta = $ff77
 
 
 ;location = $fa ;$FA-$FB. location of the string
@@ -65,12 +65,7 @@ p2a
   adc #32
   
 .write
-  ldx #z_location2
-  stx $02b9
-  
-  ldx #0
-  jsr k_indsta
-  
+  sta (z_location2),y
   iny
   cpy contentLength
   bne .loop

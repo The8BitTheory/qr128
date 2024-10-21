@@ -1,8 +1,8 @@
 
 !to "qr.bin.prg",cbm
 
-k_indfet  = $ff74
-k_indsta  = $ff77
+;k_indfet  = $ff74
+;k_indsta  = $ff77
 k_primm   = $ff7d
 
 
