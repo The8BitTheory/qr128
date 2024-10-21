@@ -15,14 +15,14 @@ z_counter2  = $0c     ;VERCK
 *= $1300
 ;*= $C000
 
-    jmp init
-    jmp p2a
-    jmp bytes_to_stream
-    jmp calc_xor_masks
-    jmp rs
-    jmp write_patterns
-    jmp stream_to_module
-    jmp showdata
+    jsr init
+    jsr p2a
+    jsr bytes_to_stream
+    jsr calc_xor_masks
+    jsr rs
+    jsr write_patterns
+    jsr stream_to_module
+    jsr showdata
     
     rts
     
