@@ -1,4 +1,4 @@
-
+﻿
 !to "qr.bin.prg",cbm
 
 ;k_indfet  = $ff74
@@ -27,13 +27,9 @@ z_counter2  = $0c     ;VERCK
     rts
     
 showdata
-    lda #<data
-    sta $03e8
-    lda #>data
-    sta $03e9
-    
     lda size
-    sta $03ea
+    ldx #<data
+    ldy #>data
     
     rts
     

@@ -1,4 +1,4 @@
-; reed-solomon error correction calculation for use in qr-codes
+﻿; reed-solomon error correction calculation for use in qr-codes
 ; writes the resulting ecc bytes directly into the right memory position
 
 
@@ -20,20 +20,31 @@
 
 !zone reedSolomon
 
-divisor    =   $03e4   ; current divisor
-rsfactor =     $03e5
+;divisor    =   $03e4   ; current divisor
+;rsfactor =     $03e5
 
-rsmulres =     $03e6   ; result of rs-multiply
-rsmul1 =       $03e7   ; rs-multiply temp var 1
-rsmul2 =       $03e9   ; rs-multiply temp var 2
+;rsmulres =     $03e6   ; result of rs-multiply
+;rsmul1 =       $03e7   ; rs-multiply temp var 1
+;rsmul2 =       $03e9   ; rs-multiply temp var 2
 
 m_divisors =    $0d    ;$0d-$0e
-;ds_offset =    $03eb   ; rs-remainder temp var 1 
-;ds_loop_left = $03ec   ; rs-remainder temp var 2 --> using z_counter2 now
-loopc =        $03ed   ; loop counter in rsremainder for the loop that contains rsmultiply
+;loopc =        $03ed   ; loop counter in rsremainder for the loop that contains rsmultiply
 
-rsmulx =       $03ee   ; store and recover x-reg here when calling rsmultiply
-rsmuly =       $03ef   ; store and recover y-reg here when calling rsmultiply
+;rsmulx =       $03ee   ; store and recover x-reg here when calling rsmultiply
+;rsmuly =       $03ef   ; store and recover y-reg here when calling rsmultiply
+
+    .divisor     !byte 0   ; current divisor
+    .rsfactor    !byte 0
+
+    .rsmulres    !byte 0; result of rs-multiply
+    .rsmul1      !byte 0,0   ; rs-multiply temp var 1
+    .rsmul2      !byte 0,0   ; rs-multiply temp var 2
+
+    .loopc       !byte 0   ; loop counter in rsremainder for the loop that contains rsmultiply
+
+    .rsmulx      !byte 0   ; store and recover x-reg here when calling rsmultiply
+    .rsmuly      !byte 0   ; store and recover y-reg here when calling rsmultiply
+
 
 ;*= $1300
 rs
@@ -88,7 +99,7 @@ rsremainder:
     
     ldx #0
     eor (z_location2,x)
-    sta rsfactor
+    sta .rsfactor
     
     ldy #0
     ; remove first element from result-array
@@ -108,12 +119,12 @@ rsremainder:
     sta (z_location2),y
     
     ldx eccLength
-    stx loopc
+    stx .loopc
     
     ldy #0
     
 -   lda (m_divisors),y
-    sta divisor
+    sta .divisor
 
     jsr rsmultiply
     
@@ -136,40 +147,40 @@ rsremainder:
     ;xreg=factor, acc=divisor (y in basic)
 rsmultiply:
 
-    stx rsmulx
-    sty rsmuly
+    stx .rsmulx
+    sty .rsmuly
     
     lda #0
-    sta rsmulres
+    sta .rsmulres
     
     ldy #7
     
 --  clc
     asl
-    sta rsmul1       ; B in the Basic implementation
+    sta .rsmul1       ; B in the Basic implementation
     bcc +
-    inc rsmul1+1
+    inc .rsmul1+1
     
-+   lda rsmulres     ; R in the Basic implementation
++   lda .rsmulres     ; R in the Basic implementation
     and #128
     cmp #128            ; C=INT(R/128)
     
     bne +
     ;c=c*285
     lda #$1d
-    sta rsmul2
+    sta .rsmul2
     
     lda #$01
-    sta rsmul2+1
+    sta .rsmul2+1
     jmp ++
     
-+   sta rsmul2
-    sta rsmul2+1
++   sta .rsmul2
+    sta .rsmul2+1
     
     ;r=xor(b,c)
-++  lda rsmul1
-    eor rsmul2
-    sta rsmulres
+++  lda .rsmul1
+    eor .rsmul2
+    sta .rsmulres
     
     ;----------------
     
@@ -177,7 +188,7 @@ rsmultiply:
     tya
     tax
     
-    lda rsfactor
+    lda .rsfactor
     cpx #0
     beq +
 -   lsr
@@ -186,25 +197,25 @@ rsmultiply:
     
     ;B=B AND 1
 +   and #1
-    sta rsmul1
+    sta .rsmul1
 
     beq +
     
-    lda divisor
+    lda .divisor
     
     ;B=B*X
     
-+   sta rsmul1
++   sta .rsmul1
     
     ;R=XOR(R,B) AND 255
-    eor rsmulres
-    sta rsmulres
+    eor .rsmulres
+    sta .rsmulres
 
     dey
     bpl --
     
-    ldx rsmulx
-    ldy rsmuly
+    ldx .rsmulx
+    ldy .rsmuly
 
     rts
     

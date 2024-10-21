@@ -1,4 +1,4 @@
-; petscii to ascii conversion
+﻿; petscii to ascii conversion
 ; takes the result of pointer(x) as input (i). regx=loc lb, regy=loc hb, acc=length
 ; bank 1, peek(i) gives length of string, peek(i+1)+peek(i+2)*256 gives address of string
 

@@ -1,4 +1,4 @@
-; this writes bytes to stream
+﻿; this writes bytes to stream
 ; content bytes are shifted one nybble (due to the mode nybble)
 ; padding and ecc bytes are written 1:1, thanks due to filling up the last content byte
 
