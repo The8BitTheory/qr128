@@ -1,0 +1,141 @@
+﻿
+
+; this calculates all sizes according to the length of the content
+; accumulator holds length
+; x holds bank 1 address lb
+; y holds bank 1 address hb
+init
+
+    sta z_temp  ;this holds the variable name
+  
+    ;first, find out where variable is stored  
+    ldx $2d
+    stx z_location
+    ldy $2e
+    sty z_location+1
+    
+    
+    
+    ldy #0
+-   lda (z_location),y
+    cmp z_temp          ;variable found
+    beq +
+    
+    tya
+    clc
+    adc #7
+    tay
+    jmp -
+    
++   iny
+    iny
+    lda (z_location),y
+    sta contentLength
+    
+    iny
+    lda (z_location),y
+    tax
+    iny
+    lda (z_location),y
+    tay
+
+    ; input address for petscii-to-ascii conversion    
+    stx z_location
+    sty z_location+1
+
+    ; output address for petscii-to-ascii conversion
+    ldx #<data
+    stx z_location2
+    ldx #>data
+    stx z_location2+1
+        
+;calculate version.
+    ; decreasing the version boundaries by one byte, because of mode and length bits (eg lower than 108)
+    ; max supported version is 5 -> 108 bytes -2=106
+    cmp #18
+    bcs +
+    lda #21
+    sta size
+    lda #<441
+    sta matrixSize
+    lda #>441
+    sta matrixSize+1
+    lda #7
+    sta eccLength
+    lda #26
+    sta streamLength
+    lda #0
+    sta rsDivisorOffset
+    jmp ++
+    
++   cmp #33
+    bcs +
+    lda #25
+    sta size
+    lda #<625
+    sta matrixSize
+    lda #>625
+    sta matrixSize+1
+    lda #10
+    sta eccLength
+    lda #44
+    sta streamLength
+    lda #7
+    sta rsDivisorOffset
+    jmp ++
+    
++   cmp #54
+    bcs +
+    lda #29
+    sta size
+    lda #<841
+    sta matrixSize
+    lda #>841
+    sta matrixSize+1
+    lda #15
+    sta eccLength
+    lda #70
+    sta streamLength
+    lda #17
+    sta rsDivisorOffset
+    jmp ++
+    
++   cmp #79
+    bcs +
+    lda #33
+    sta size
+    lda #<1089
+    sta matrixSize
+    lda #>1089
+    sta matrixSize+1
+    lda #20
+    sta eccLength
+    lda #100
+    sta streamLength
+    lda #32
+    sta rsDivisorOffset
+    jmp ++
+    
++   cmp #107
+    bcs +
+    lda #37
+    sta size
+    lda #<1369
+    sta matrixSize
+    lda #>1369
+    sta matrixSize+1
+    lda #26
+    sta eccLength
+    lda #134
+    sta streamLength
+    lda #52
+    sta rsDivisorOffset
+    jmp ++
+
+; content too long for this    
++   brk
+    nop
+    !pet "Content is too long.",0
+    
+; done
+++  rts
