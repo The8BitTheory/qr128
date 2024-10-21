@@ -148,7 +148,6 @@ calc_xor_masks
     bne -
     
     jsr .clean_format_modules_hor
-;    jmp +
 
     lda .pattern100
     sta z_location2
@@ -298,12 +297,7 @@ calc_xor_masks
     ;clear first pattern byte area (bottom)
     jsr set_location_datastream ;this equals end of matrix+1
     
-    sec
-    lda z_location
-    sbc size
-    sta z_location
-    bcs +
-    dec z_location+1
+    jsr dec_line
     
 +   clc
     adc #8    ;add 9, because we were 1 right of the matrix
@@ -311,14 +305,12 @@ calc_xor_masks
     bcc +
     inc z_location+1
     
-    
-    
 +   ldy #7
     ldx #0
 -   lda #0
     sta (z_location,x)
     
-    jsr .dec_line
+    jsr dec_line
     dey
     bne -
     
@@ -357,15 +349,6 @@ calc_xor_masks
         
     rts
     
-.dec_line
-    lda z_location
-    sec
-    sbc size
-    sta z_location
-    bcs +
-    dec z_location+1
-    
-+   rts
     
 
 .pattern100 !byte %01110010, %11110011

@@ -199,12 +199,7 @@ writeAndAdvance
 .advUp
     ;move one row up and one module to the right
     ;z_location2=z_location2-size+1
-    sec
-    lda z_location
-    sbc size
-    sta z_location
-    bcs +
-    dec z_location+1
+    jsr dec_line
 
 +   clc
 ;    lda z_location
@@ -294,12 +289,7 @@ writeAndAdvance
     
 .changeDirectionToUp
     ;W=W-L-2:D=-1:C=C-2
-    sec
-;    lda z_location
-    sbc size
-    sta z_location
-    bcs +
-    dec z_location+1
+    jsr dec_line
     
     sec
 +   sbc #2

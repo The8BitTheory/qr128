@@ -65,6 +65,17 @@ inc_line
     inc z_location+1
     
 +   rts
+
+dec_line
+    lda z_location
+    sec
+    sbc size
+    sta z_location
+    bcs +
+    dec z_location+1
+    
++   rts
+
     
 size            !byte 0   ;size of one axis-length of the final matrix
 contentLength   !byte 0

@@ -116,15 +116,11 @@ write_patterns
     jsr .set_location_end
     
     ; now, subtract 7 lines from z_location
-    lda z_location
+    
     ldy #8
--   sec
-    sbc size
-    sta z_location
-    bcs +
-    dec z_location+1
+-   jsr dec_line
 
-+   dey
+    dey
     bne -
     
     jsr .dec_location_by_1
@@ -196,12 +192,7 @@ write_patterns
     ;ldx #0
     ;jsr k_indsta
     
-    sec
-    lda z_location
-    sbc size
-    sta z_location
-    bcs +
-    dec z_location+1
+    jsr dec_line
     
 +   dey
     bne -
@@ -277,13 +268,8 @@ write_patterns
     jsr .set_location_end
     
     ; now, subtract 8 lines from z_location
-    lda z_location
     ldy #8
--   sec
-    sbc size
-    sta z_location
-    bcs +
-    dec z_location+1
+-   jsr dec_line
 
 +   dey
     bne -
