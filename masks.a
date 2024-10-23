@@ -196,8 +196,51 @@ calc_xor_masks
     lda .bit4
     sta .m_bit
     jsr .write_format_modules_hor
+
+    
     
     jsr .clean_format_modules_vert
+
+
+    lda .pattern100
+    sta z_location2
+    lda .pattern100+1
+    sta z_location2+1
+    lda .bit1
+    sta .m_bit
+    lda #64
+    sta z_temp
+    jsr .write_format_modules_vert
+    
+    lda .pattern101
+    sta z_location2
+    lda .pattern101+1
+    sta z_location2+1
+    lda #64
+    sta z_temp
+    lda .bit2
+    sta .m_bit
+    jsr .write_format_modules_vert
+    
+    lda .pattern110
+    sta z_location2
+    lda .pattern110+1
+    sta z_location2+1
+    lda #64
+    sta z_temp
+    lda .bit3
+    sta .m_bit
+    jsr .write_format_modules_vert
+    
+    lda .pattern111
+    sta z_location2
+    lda .pattern111+1
+    sta z_location2+1
+    lda #64
+    sta z_temp
+    lda .bit4
+    sta .m_bit
+    jsr .write_format_modules_vert
 
     rts
 
@@ -243,12 +286,14 @@ calc_xor_masks
 
     
 .shift_temp_right
+    ;lsr z_temp
     lda z_temp
     lsr
     sta z_temp
     rts
 
 .write_format_module
+    
     lda z_location2
     bit z_temp
     beq +
@@ -312,8 +357,6 @@ calc_xor_masks
 -   lda #0
     sta (z_location,x)
     
-    ;jsr write_format_module
-    
     jsr dec_line
     dey
     bne -
@@ -353,7 +396,64 @@ calc_xor_masks
         
     rts
     
+.write_format_modules_vert
+    ;write first pattern byte area (bottom). write the module bottom up (this follow the bit order MSB-to-LSB)
+    jsr set_location_datastream ;this equals end of matrix+1
+    jsr dec_line
+    
+    clc
+    adc #8
+    sta z_location
+    bcc +
+    inc z_location+1
 
+    ldy #0
+-   jsr .write_format_module
+    jsr dec_line
+    jsr .shift_temp_right
+    ;dey
+    bne -
+    
+    ; write 7 from top-down (that's backwards to the bit order of the pattern byte)
+    jsr set_location_to_data
+    clc
+    lda z_location
+    adc #8
+    sta z_location
+    bcc +
+    inc z_location+1
+    
+    ; read 2nd format pattern byte backwards, ie write from top to bottom
++   ;ldx #0   ;already set to zero from previous pattern byte
+    ldy #9
+    
+    lda #1
+    sta z_temp
+    lda z_location2+1
+    sta z_location2
+    
+-   sty z_counter1
+    ldy #0
+    jsr .write_format_module
+    ldy z_counter1
+    jsr inc_line
+    
+    lda z_temp
+    asl
+    sta z_temp
+    
+    dey
+    
+    cpy #3
+    bne +
+    jsr inc_line
+    dey
+    jmp -
+    
++   cpy #0
+    bne -
+        
+    rts
     
 
 .pattern100 !byte %01110010, %11110011

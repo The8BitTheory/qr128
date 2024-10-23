@@ -23,6 +23,7 @@ z_counter2  = $0c     ;VERCK
     jsr write_patterns
     jsr stream_to_module
     jsr showdata
+    jsr render
     
     rts
     
@@ -91,6 +92,7 @@ rsDivisorOffset !byte 0
                             ; z_location2(=z_location + z_counter1)
 !source "patterns.a"        ; this writes timing, alignment, finder patterns etc.
 !source "stream2module.a"
+!source "render.a"
 
 
 data    !byte 0
