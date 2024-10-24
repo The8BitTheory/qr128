@@ -1,4 +1,6 @@
-﻿
+﻿; this renders 1 module per petscii-character
+; so, output is limited to nr of lines on screen (23 on vic20, 25 on all the other machines)
+; that leaves the vic20 with version 1 codes and all others with version 2 codes
 render
 
 !zone render
@@ -20,7 +22,7 @@ render
     jmp ++
 +   lda #1
 ++  eor z_temp
-  
+    
 .write_value
     bit .m_one
     bne +
@@ -55,7 +57,6 @@ render
     
 +   rts
 
-.modulechars  !byte 32,126,124,226,123,97,255,236,108,127,225,251,98,252,254,160
 .m_one        !byte 1
 .m_64         !byte 64
 .m_bit        !byte 2

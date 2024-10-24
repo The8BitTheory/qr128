@@ -1,0 +1,135 @@
+﻿; this renders 2x2 modules in a single petscii character
+; this allows for the full size of the max supported size (version 5 with 37x37 modules) on all machines
+; including the vic 20
+
+render
+
+!zone render
+    jsr set_location_to_data
+    ldy #0                    ;y holds the column (reset to zero after eol is reached)
+    
+    ldx #0
+    stx z_counter1            ;used for counting modules for display in a single character (used for bit shifting)
+    stx z_counter2            ;z_counter2 temporarily holds the value of the 4 modules (the bit-shifted values)
+    
+    lda size
+    sta m_ypos                ;used to check whether we moved below the last line
+    lda #0
+    sta m_xpos                ;the column for writing the petscii character that holds 4 modules
+    
+.read_4_modules
+    jsr .handle_module
+    iny
+    cpy size  ; check if we're at the right border of the matrix
+    beq +     ; if yes, read the module below
+    
+    jsr .handle_module
++   dey
+    jsr inc_line
+    dec m_ypos
+    beq .skip_module    ;we're in the last line. go up and two to the right (dec_line once and iny twice)
+
+    jsr .handle_module
+    iny
+    cpy size
+    beq .next_line
+    
+    jsr .handle_module
+    jsr dec_line
+    inc m_ypos
+    iny
+    
+    jmp .read_4_modules
+
+.skip_module
+    jsr dec_line
+    inc m_ypos
+    iny
+    cpy size
+    beq .end
+    iny
+    jmp .read_4_modules
+    
+    
+.next_line
+    jsr .write_character
+    
+    ldy #0
+    jsr inc_line
+    dec m_ypos
+    jsr .inc_line2
+    
+    jmp .read_4_modules
+    
+    
+.handle_module
+    lda (z_location),y
+    bit .m_64   ;is xor-bit set?
+    beq .collect_value
+    
+    pha
+    and #1
+    sta z_temp
+    pla
+    and .m_bit
+    bne +
+    lda #0
+    jmp ++
++   lda #1
+++  eor z_temp
+
+.collect_value
+    ldx z_counter1
+-   beq +
+    asl
+    dex
+    jmp -
+    
++   ora z_counter2
+    sta z_counter2
+
+    ldx z_counter1
+    inx
+    cpx #4
+    beq .write_character      ;writes the petscii character (which holds 4 modules)
+    
+    stx z_counter1
+    rts
+    
+.write_character
+    sty z_temp
+    
+    ldx z_counter2
+    lda .modulechars,x
+    ldy m_xpos
+    sta (z_location2),y
+    
+    ldx #0
+    stx z_counter1
+    stx z_counter2
+    
+    inc m_xpos
+    ldy z_temp
+    rts
+    
+
+.end
+    rts
+    
+    
+.inc_line2
+    lda #0
+    sta m_xpos
+    
+    lda z_location2
+    clc
+    adc #40
+    sta z_location2
+    bcc +
+    inc z_location2+1
+    
++   rts
+
+.modulechars  !byte 32,126,124,226,123,97,255,236,108,127,225,251,98,252,254,160
+.m_64         !byte 64
+.m_bit        !byte 2

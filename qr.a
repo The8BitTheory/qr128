@@ -81,8 +81,9 @@ eccLength       !byte 0   ;nr of ecc bytes to generate
 streamLength    !byte 0
 matrixSize      !byte 0,0 ;size of the matrix in modules (1 byte per module)
 rsDivisorOffset !byte 0
-;counter1        !byte 0
-;counter2        !byte 0
+m_xpos          !byte 0
+m_ypos          !byte 0
+
 
 !source "init.a"
 !source "p2a.a"             ; reads petscii bytes from z_location and writes ascii to z_location2 (which is matrix-start)
@@ -93,7 +94,7 @@ rsDivisorOffset !byte 0
                             ; z_location2(=z_location + z_counter1)
 !source "patterns.a"        ; this writes timing, alignment, finder patterns etc.
 !source "stream2module.a"
-!source "render.a"
+!source "render2.a"
 
 
 data    !byte 0

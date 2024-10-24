@@ -3,8 +3,6 @@
 
 
 !zone masks
-.m_xpos !byte 0
-.m_ypos !byte 0
 .m_bit  !byte 0
 
 calc_xor_masks
@@ -36,11 +34,11 @@ calc_xor_masks
 ++  jsr set_location_to_data
     
     ldx #0
-    stx .m_xpos
-    stx .m_ypos
+    stx m_xpos
+    stx m_ypos
 
   ; mask 111 (bit 4): x%3=0
--   lda .m_xpos
+-   lda m_xpos
     jsr .modulo_3_is_zero
     bne +       ; if not zero don't write mask-bit to module
     lda #%00010000
@@ -48,8 +46,8 @@ calc_xor_masks
     
   ; mask 110 (bit 3): (y+x)%3=0
 +   clc
-    lda .m_xpos
-    adc .m_ypos
+    lda m_xpos
+    adc m_ypos
     jsr .modulo_3_is_zero
     bne +
     lda #%00001000
@@ -57,47 +55,41 @@ calc_xor_masks
     
   ; mask 101 (bit 2): (y+x)%2=0
 +   clc
-    lda .m_xpos
-    adc .m_ypos
+    lda m_xpos
+    adc m_ypos
     and #%00000001  ;1-bit at the end says it's an odd number --> modulo by two is not zero
     bne +     ;if AND was zero, don't change module
     lda #%00000100
     jsr .write_to_mask
     
     ; mask 100 (bit 1): y%2=0
-+   lda .m_ypos
++   lda m_ypos
     and #%00000001
     bne +
     lda #%00000010
     jsr .write_to_mask
     
-+   inc .m_xpos
-    lda .m_xpos
++   inc m_xpos
+    lda m_xpos
     cmp size
     bne -     ; last column not passed, continue with next module
     
     ; last column passed
     lda #0
-    sta .m_xpos
-    inc .m_ypos            ; increase row
-    lda .m_ypos
+    sta m_xpos
+    inc m_ypos            ; increase row
+    lda m_ypos
     cmp size              ; if passed last row, we're done
     beq .draw_format_patterns
     
     ; last row not passed
     jsr inc_line
-;    clc
-;    lda z_location
-;    adc size
-;    sta z_location
-;    bcc +
-;    inc z_location+1
     
     ; last column not passed
     jmp -
 
 .write_to_mask
-    ldy .m_xpos
+    ldy m_xpos
     ora (z_location),y
     sta (z_location),y
     rts
