@@ -19,15 +19,10 @@ write_patterns
     ;--------------------
     ; add 6xsize to be in the row for writing the pattern
     ldy #6
-    lda z_location
--   clc
-    adc size
-    sta z_location
-    bcc +
-    inc z_location+1
+-   jsr inc_line
     
-+   dey
-    bne -      
+    dey
+    bne -
     
     ; write modules, starting with dark
     lda #z_location   ; setup for indsta
@@ -36,8 +31,6 @@ write_patterns
     ldy #0
 -   lda #1
     sta (z_location),y
-    ;ldx #0
-    ;jsr k_indsta
     iny
     
     cpy size          ; size is always an odd number, we only need to check for completeness here.
@@ -45,8 +38,6 @@ write_patterns
     
     lda #0
     sta (z_location),y
-    ;ldx #0
-    ;jsr k_indsta
     iny
     jmp -
   
@@ -70,8 +61,6 @@ write_patterns
 -   ldy #0
     lda #1
     sta (z_location),y
-    ;ldx #0
-    ;jsr k_indsta
     ldy z_counter1
     iny
     
@@ -84,8 +73,6 @@ write_patterns
     ldy #0
     lda #0
     sta (z_location),y
-    ;ldx #0
-    ;jsr k_indsta
     inc z_counter1      ; now inc makes sense. 5 cycles over (3 and 2 and 3 for ldy iny sty)
     jsr inc_line
     jmp -
@@ -144,14 +131,9 @@ write_patterns
     
     ;calculate starting position of top-right pattern(=matrixStart + size-8)
     jsr set_location_to_data
-    lda z_location
-    clc
-    adc size
-    sta z_location
-    bcc +
-    inc z_location+1
+    jsr inc_line
     
-+   sec
+    sec
     lda z_location
     sbc #8
     sta z_location
@@ -162,9 +144,6 @@ write_patterns
     jsr .dec_location_by_1
     ldy #8
     jsr .do_horizontal_y_zeroes
-;    jsr inc_line
-;    ldy #8
-;    jsr .do_horizontal_y_zeroes
 
     ; we're done. if contentlength > 17, draw the alignment pattern. else, return
     lda contentLength
@@ -179,8 +158,6 @@ write_patterns
 
 -   lda #0
     sta (z_location),y
-    ;ldx #0
-    ;jsr k_indsta
     dey
     bne -
 
@@ -189,8 +166,6 @@ write_patterns
 .do_vertical_y_zeroes
 -   lda #0
     sta (z_location),y
-    ;ldx #0
-    ;jsr k_indsta
     
     jsr dec_line
     
@@ -303,8 +278,6 @@ write_patterns
 +   lda #%00000000
 
 ++  sta (z_location),y
-    ;ldx #0
-    ;jsr k_indsta
     iny
     lda z_temp
     lsr

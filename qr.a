@@ -22,12 +22,13 @@ z_counter2  = $0c     ;VERCK
     jsr rs
     jsr write_patterns
     jsr stream_to_module
-    jsr showdata
+    
+    lda #$0
+    sta z_location2
+    lda #$4
+    sta z_location2+1
     jsr render
     
-    rts
-    
-showdata
     lda size
     ldx #<data
     ldy #>data

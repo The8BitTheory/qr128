@@ -11,8 +11,6 @@ bytes_to_stream
     jsr set_location_datastream
 
 ; write mode byte and first nybble of length byte
-;    ldx #z_location
-;    stx $02b9
     ldy #0
     sty z_counter1    ;counter1 holds the datastream index (ie write index)
     sty z_counter2    ;counter2 holds the input index (ie read index) (stop-condition: cmp contentLength)

@@ -3,10 +3,6 @@
 
 
 !zone masks
-;m_xpos      = $03e4
-;m_ypos      = $03e5
-;m_bit       = $03e6
-
 .m_xpos !byte 0
 .m_ypos !byte 0
 .m_bit  !byte 0
@@ -31,7 +27,7 @@ calc_xor_masks
     dex
     beq ++
 
-    jsr .inc_row
+    jsr inc_line
     
     jmp --
 
@@ -89,26 +85,16 @@ calc_xor_masks
     beq .draw_format_patterns
     
     ; last row not passed
-    clc
-    lda z_location
-    adc size
-    sta z_location
-    bcc +
-    inc z_location+1
-    
+    jsr inc_line
+;    clc
+;    lda z_location
+;    adc size
+;    sta z_location
+;    bcc +
+;    inc z_location+1
     
     ; last column not passed
-+   jmp -
-
-.inc_row
-    clc
-    lda z_location
-    adc size
-    sta z_location
-    bcc +
-    inc z_location+1
-    
-+   rts
+    jmp -
 
 .write_to_mask
     ldy .m_xpos
@@ -147,7 +133,7 @@ calc_xor_masks
 
     ;go to row 8 (0-based)
     ldy #8
--   jsr .inc_row
+-   jsr inc_line
     dey
     bne -
     
@@ -196,11 +182,12 @@ calc_xor_masks
     lda .bit4
     sta .m_bit
     jsr .write_format_modules_hor
-
-    
     
     jsr .clean_format_modules_vert
-
+    ;---------------
+    ; rts here is for debug
+    ; -------------
+    rts
 
     lda .pattern100
     sta z_location2
@@ -286,10 +273,8 @@ calc_xor_masks
 
     
 .shift_temp_right
-    ;lsr z_temp
+    lsr z_temp
     lda z_temp
-    lsr
-    sta z_temp
     rts
 
 .write_format_module
@@ -438,9 +423,8 @@ calc_xor_masks
     ldy z_counter1
     jsr inc_line
     
-    lda z_temp
-    asl
-    sta z_temp
+    asl z_temp
+;    lda z_temp
     
     dey
     

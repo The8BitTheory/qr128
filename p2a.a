@@ -29,7 +29,6 @@ p2a
     ;stx z_location2+1
   
   ldy #0
-  sei
   
 .loop
   lda #z_location
@@ -70,5 +69,4 @@ p2a
   cpy contentLength
   bne .loop
   
-  cli
   rts

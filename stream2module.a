@@ -118,9 +118,9 @@ stream_to_module
 ++  jsr writeAndAdvance
     ldy z_counter1
 
-    lda z_temp
-    lsr
-    sta z_temp
+    ;lda z_temp
+    lsr z_temp
+    ;sta z_temp
     bne -
     
     iny
@@ -137,14 +137,16 @@ writeAndAdvance
     sta z_counter2
     
     ; load current value of matrix-field into Acc
-    jsr .do_indfet
+    ldy #0
+    lda (z_location),y
+    ;jsr .do_indfet
     
     ; OR the values
     ora z_counter2
     and #$7f
 
     ; store the value in the matrix
-    ldy #0
+    
     sta (z_location),y
     ;ldx #0
     ;jsr k_indsta

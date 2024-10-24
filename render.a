@@ -2,7 +2,60 @@
 render
 
 !zone render
+    jsr set_location_to_data
+    ldy #0                    ;y holds the column (reset to zero after eol is reached)
+    
+.handle_col
+    lda (z_location),y
+    bit .m_64   ;is xor-bit set?
+    beq .write_value
+    
+    pha
+    and #1
+    sta z_temp
+    pla
+    and .m_bit
+    bne +
+    lda #0
+    jmp ++
++   lda #1
+++  eor z_temp
+  
+.write_value
+    bit .m_one
+    bne +
+    lda #32
+    jmp ++
++   lda #160
+++  sta (z_location2),y
+  
+    ;move on
+    iny
+    cpy size
+    bne .handle_col
+    
+    ldy #0
+    jsr .inc_line2
+    jsr inc_line
+    cmp stream2module.m_endAddress
+    beq .end
+    jmp .handle_col
 
-  rts
+.end
+    rts
+    
+    
+.inc_line2
+    lda z_location2
+    clc
+    adc #40
+    sta z_location2
+    bcc +
+    inc z_location2+1
+    
++   rts
 
 .modulechars  !byte 32,126,124,226,123,97,255,236,108,127,225,251,98,252,254,160
+.m_one        !byte 1
+.m_64         !byte 64
+.m_bit        !byte 2
