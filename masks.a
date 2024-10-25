@@ -1,9 +1,9 @@
-﻿; 101 bytes of codesize
+; 101 bytes of codesize
 ; generates a result of 684 bytes (in v5 codes)
 
 
 !zone masks
-.m_bit  !byte 0
+
 
 calc_xor_masks
 
@@ -179,7 +179,7 @@ calc_xor_masks
     ;---------------
     ; rts here is for debug
     ; -------------
-    rts
+    ;rts
 
     lda .pattern100
     sta z_location2
@@ -323,13 +323,9 @@ calc_xor_masks
     
     jsr dec_line
     
-    clc
-    adc #8    ;add 9, because we were 1 right of the matrix
-    sta z_location
-    bcc +
-    inc z_location+1
+    jsr .add_8_to_location
     
-+   ldy #7
+    ldy #7
     ldx #0
 -   lda #0
     sta (z_location,x)
@@ -344,15 +340,9 @@ calc_xor_masks
     
     ; clear 7 from top-down (that's backwards to how we would write the modules)
     jsr set_location_to_data
-    clc
-    lda z_location
-    adc #8
-    sta z_location
-    bcc +
-    inc z_location+1
+    jsr .add_8_to_location
     
     ; read 2nd format pattern byte backwards, ie write from top to bottom
-+   ;ldx #0   ;already set to zero from previous pattern byte
     ldy #9
 
 -   lda #0
@@ -378,30 +368,19 @@ calc_xor_masks
     jsr set_location_datastream ;this equals end of matrix+1
     jsr dec_line
     
-    clc
-    adc #8
-    sta z_location
-    bcc +
-    inc z_location+1
+    jsr .add_8_to_location
 
     ldy #0
 -   jsr .write_format_module
     jsr dec_line
     jsr .shift_temp_right
-    ;dey
     bne -
     
     ; write 7 from top-down (that's backwards to the bit order of the pattern byte)
     jsr set_location_to_data
-    clc
-    lda z_location
-    adc #8
-    sta z_location
-    bcc +
-    inc z_location+1
+    jsr .add_8_to_location
     
     ; read 2nd format pattern byte backwards, ie write from top to bottom
-+   ;ldx #0   ;already set to zero from previous pattern byte
     ldy #9
     
     lda #1
@@ -431,7 +410,17 @@ calc_xor_masks
         
     rts
     
-
+.add_8_to_location
+    clc
+    lda z_location
+    adc #8
+    sta z_location
+    bcc +
+    inc z_location+1
+    
++   rts
+    
+.m_bit      !byte 0
 .pattern100 !byte %01110010, %11110011
 .pattern101 !byte %01110111, %11000100 
 .pattern110 !byte %01111000, %10011101

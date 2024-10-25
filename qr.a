@@ -1,4 +1,4 @@
-﻿
+
 !to "qr.bin.prg",cbm
 
 ;k_indfet  = $ff74
@@ -16,64 +16,22 @@ z_counter2  = $0c     ;VERCK
 ;*= $C000
 
     jsr init
-    jsr p2a
+    jmp +
+    jmp render
+    ;---end
+    
++   jsr p2a
     jsr bytes_to_stream
     jsr calc_xor_masks
     jsr rs
     jsr write_patterns
     jsr stream_to_module
-    
-    lda #$0
-    sta z_location2
-    lda #$4
-    sta z_location2+1
-    jsr render
-    
+        
     lda size
     ldx #<data
     ldy #>data
     
     rts
-    
-set_location_datastream
-    clc
-    lda #<data
-    adc matrixSize
-    sta z_location
-    
-    lda #>data
-    adc matrixSize+1
-    sta z_location+1
-    
-    rts
-    
-set_location_to_data
-    lda #<data
-    sta z_location
-    lda #>data
-    sta z_location+1
-    rts
-    
-inc_line
-    lda z_location
-    clc
-    adc size
-    sta z_location
-    bcc +
-    inc z_location+1
-    
-+   rts
-
-dec_line
-    lda z_location
-    sec
-    sbc size
-    sta z_location
-    bcs +
-    dec z_location+1
-    
-+   rts
-
     
 size            !byte 0   ;size of one axis-length of the final matrix
 contentLength   !byte 0
@@ -85,6 +43,7 @@ m_xpos          !byte 0
 m_ypos          !byte 0
 
 
+!source "common.a"
 !source "init.a"
 !source "p2a.a"             ; reads petscii bytes from z_location and writes ascii to z_location2 (which is matrix-start)
 !source "bytes2stream.a"    ; reads ascii from z_location2 and writes into datastream at z_location (=data+matrix_size)

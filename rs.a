@@ -1,4 +1,4 @@
-﻿; reed-solomon error correction calculation for use in qr-codes
+; reed-solomon error correction calculation for use in qr-codes
 ; writes the resulting ecc bytes directly into the right memory position
 
 
@@ -33,17 +33,6 @@ m_divisors =    $0d    ;$0d-$0e
 ;rsmulx =       $03ee   ; store and recover x-reg here when calling rsmultiply
 ;rsmuly =       $03ef   ; store and recover y-reg here when calling rsmultiply
 
-    .divisor     !byte 0   ; current divisor
-    .rsfactor    !byte 0
-
-    .rsmulres    !byte 0; result of rs-multiply
-    .rsmul1      !byte 0,0   ; rs-multiply temp var 1
-    .rsmul2      !byte 0,0   ; rs-multiply temp var 2
-
-    .loopc       !byte 0   ; loop counter in rsremainder for the loop that contains rsmultiply
-
-    .rsmulx      !byte 0   ; store and recover x-reg here when calling rsmultiply
-    .rsmuly      !byte 0   ; store and recover y-reg here when calling rsmultiply
 
 
 ;*= $1300
@@ -242,3 +231,14 @@ rsdivisors
     !byte $F6,$33,$B7,$4,$88,$62,$C7,$98,$4D,$38,$CE,$18,$91,$28,$D1,$75
     !byte $E9,$2A,$87,$44,$46,$90,$92,$4D,$2B,$5E
     
+.divisor     !byte 0   ; current divisor
+.rsfactor    !byte 0
+
+.rsmulres    !byte 0; result of rs-multiply
+.rsmul1      !byte 0,0   ; rs-multiply temp var 1
+.rsmul2      !byte 0,0   ; rs-multiply temp var 2
+
+.loopc       !byte 0   ; loop counter in rsremainder for the loop that contains rsmultiply
+
+.rsmulx      !byte 0   ; store and recover x-reg here when calling rsmultiply
+.rsmuly      !byte 0   ; store and recover y-reg here when calling rsmultiply

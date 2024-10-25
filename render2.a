@@ -1,12 +1,30 @@
-﻿; this renders 2x2 modules in a single petscii character
+; this renders 2x2 modules in a single petscii character
 ; this allows for the full size of the max supported size (version 5 with 37x37 modules) on all machines
 ; including the vic 20
 
 render
 
 !zone render
+    ;set screenram
+    lda #$0
+    sta z_location2
+    lda $0288
+    sta z_location2+1
+    
+    ;set linesize (use rsDivisorOffset because we don't need it any longer at this stage)
+    ldx $d5
+    inx
+    stx rsDivisorOffset
+    
+;    lda #0
+;    ldx rsDivisorOffset
+;-   sta (z_location2,x)
+;    dex
+;    bne -
+
+    
     jsr set_location_to_data
-    ldy #0                    ;y holds the column (reset to zero after eol is reached)
+    ldy #0                    ;y holds the readcolumn (reset to zero after eol is reached)
     
     ldx #0
     stx z_counter1            ;used for counting modules for display in a single character (used for bit shifting)
@@ -19,35 +37,42 @@ render
     
 .read_4_modules
     jsr .handle_module
+    inc z_counter1
     iny
     cpy size  ; check if we're at the right border of the matrix
     beq +     ; if yes, read the module below
     
     jsr .handle_module
-+   dey
++   inc z_counter1
+    dey
     jsr inc_line
     dec m_ypos
-    beq .skip_module    ;we're in the last line. go up and two to the right (dec_line once and iny twice)
+    beq .skip_bottom_row    ;we're in the last line. go up and two to the right (dec_line once and iny twice)
 
     jsr .handle_module
+    inc z_counter1
     iny
     cpy size
     beq .next_line
     
     jsr .handle_module
+    iny
     jsr dec_line
     inc m_ypos
-    iny
+    
+    jsr .write_character    
+
     
     jmp .read_4_modules
 
-.skip_module
+.skip_bottom_row
     jsr dec_line
     inc m_ypos
     iny
     cpy size
     beq .end
     iny
+    jsr .write_character
     jmp .read_4_modules
     
     
@@ -88,12 +113,6 @@ render
 +   ora z_counter2
     sta z_counter2
 
-    ldx z_counter1
-    inx
-    cpx #4
-    beq .write_character      ;writes the petscii character (which holds 4 modules)
-    
-    stx z_counter1
     rts
     
 .write_character
@@ -123,7 +142,7 @@ render
     
     lda z_location2
     clc
-    adc #40
+    adc rsDivisorOffset
     sta z_location2
     bcc +
     inc z_location2+1

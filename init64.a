@@ -1,4 +1,4 @@
-﻿
+
 
 ; this calculates all sizes according to the length of the content
 ; accumulator holds length
@@ -118,21 +118,21 @@ init
     sta rsDivisorOffset
     jmp ++
     
-+   cmp #107
-    bcs +
-    lda #37
-    sta size
-    lda #<1369
-    sta matrixSize
-    lda #>1369
-    sta matrixSize+1
-    lda #26
-    sta eccLength
-    lda #134
-    sta streamLength
-    lda #52
-    sta rsDivisorOffset
-    jmp ++
+;+   cmp #107
+;    bcs +
+;    lda #37
+;    sta size
+;    lda #<1369
+;    sta matrixSize
+;    lda #>1369
+;    sta matrixSize+1
+;    lda #26
+;    sta eccLength
+;    lda #134
+;    sta streamLength
+;    lda #52
+;    sta rsDivisorOffset
+;    jmp ++
 
 ; content too long for this    
 +   brk

@@ -1,4 +1,4 @@
-﻿; this writes the bytes of the datastream into the matrix that's finally to become the qr-code
+; this writes the bytes of the datastream into the matrix that's finally to become the qr-code
 ; this still needs to be ORed accordingly to become a valid qr-code
 
 ; procedure
@@ -30,23 +30,10 @@ writeDirection =       1  ;1=up, 0=down
 
 !zone stream2module
 
-    .m_startAddress    !byte 0,0  ;$03e4-$03e5. absolute address of where the matrix starts. used for comparisons
-    .m_endAddress      !byte 0,0  ;$03e6-$03e7. absolute address of where the matrix ends. used for comparisons
-    .m_curCol          !byte 0  ;$03e6. current column to be written to
-    .m_writeDirection  !byte 0  ;$03e7. are we moving up or down when writing modules. 1=up, 0=down
-    .m_one             !byte #1  ;holds the value 1. used for BIT operation
-    .m_128             !byte #128  ;holds the value 128. used for BIT operation
     
 
 stream_to_module
-    
-
-
-
-    ;should still be set from patterns.a
-;    lda #z_location   ; setup for indsta
-;    sta $02b9
-    
+        
     lda #0
     sta .m_endAddress
     sta .m_endAddress+1
@@ -74,12 +61,7 @@ stream_to_module
     sta z_location+1
     sta .m_endAddress+1
     
-    lda z_location
-    sec
-    sbc #1
-    sta z_location
-    bcs +
-    dec z_location+1
+    jsr dec_location_by_1
     
     
 +   ldx size
@@ -90,12 +72,6 @@ stream_to_module
     lda #writeDirection
     sta .m_writeDirection
 
-    ;lda #1
-    ;sta m_one
-    
-    ;lda #128
-    ;sta m_128
-
     ; walk over bytes of datastream, split them into bits and write these as modules
     ldy #0
     sty z_counter1
@@ -105,9 +81,6 @@ stream_to_module
   
 -   ldy z_counter1
     lda (z_location2),y
-    ;ldx #0
-    ;lda #z_location2
-    ;jsr k_indfet
     bit z_temp
     beq +
     lda #%01000001                 ;bit 6 set means data-module. bit 0 set means dark module
@@ -118,9 +91,7 @@ stream_to_module
 ++  jsr writeAndAdvance
     ldy z_counter1
 
-    ;lda z_temp
     lsr z_temp
-    ;sta z_temp
     bne -
     
     iny
@@ -139,7 +110,6 @@ writeAndAdvance
     ; load current value of matrix-field into Acc
     ldy #0
     lda (z_location),y
-    ;jsr .do_indfet
     
     ; OR the values
     ora z_counter2
@@ -148,8 +118,6 @@ writeAndAdvance
     ; store the value in the matrix
     
     sta (z_location),y
-    ;ldx #0
-    ;jsr k_indsta
     
     ; where are we in relation to column 6? (col 6 is skipped and it changes even-odd behavior of offset pos calc)
     lda .m_curCol
@@ -163,9 +131,6 @@ writeAndAdvance
 .do_indfet
     ldy #0
     lda (z_location),y
-    ;ldx #0
-    ;lda #z_location
-    ;jsr k_indfet
     
     rts
 
@@ -184,12 +149,7 @@ writeAndAdvance
 
 ; go one column to the left. that's -1 in the matrix and -1 for col
 .advWriteIdx1
-    sec
-    lda z_location
-    sbc #1
-    sta z_location
-    bcs +
-    dec z_location+1
+    jsr dec_location_by_1
     
 +   dec .m_curCol
 
@@ -248,14 +208,9 @@ writeAndAdvance
 
 .changeDirectionToDown    
     ;W=W+L-2:D=0:C=C-2
-    clc
-;    lda z_location
-    adc size
-    sta z_location
-    bcc +
-    inc z_location+1
+    jsr inc_line
     
-+   sec
+    sec
     sbc #2
     sta z_location
     bcs +
@@ -275,14 +230,9 @@ writeAndAdvance
 .advDown
     ; move one row down and one module to the right
     ;W=W+L+1
-    clc
-    lda z_location
-    adc size
-    sta z_location
-    bcc +
-    inc z_location+1
+    jsr inc_line
     
-+   clc
+    clc
     adc #1
     sta z_location
     bcc +
@@ -319,3 +269,9 @@ writeAndAdvance
     jmp .endAdvWriteIdx2
     
     
+.m_startAddress    !byte 0,0  ;$03e4-$03e5. absolute address of where the matrix starts. used for comparisons
+.m_endAddress      !byte 0,0  ;$03e6-$03e7. absolute address of where the matrix ends. used for comparisons
+.m_curCol          !byte 0  ;$03e6. current column to be written to
+.m_writeDirection  !byte 0  ;$03e7. are we moving up or down when writing modules. 1=up, 0=down
+.m_one             !byte #1  ;holds the value 1. used for BIT operation
+.m_128             !byte #128  ;holds the value 128. used for BIT operation

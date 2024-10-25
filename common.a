@@ -1,0 +1,50 @@
+;contains common methods
+
+set_location_datastream
+    clc
+    lda #<data
+    adc matrixSize
+    sta z_location
+    
+    lda #>data
+    adc matrixSize+1
+    sta z_location+1
+    
+    rts
+    
+set_location_to_data
+    lda #<data
+    sta z_location
+    lda #>data
+    sta z_location+1
+    rts
+    
+inc_line
+    lda z_location
+    clc
+    adc size
+    sta z_location
+    bcc +
+    inc z_location+1
+    
++   rts
+
+dec_line
+    lda z_location
+    sec
+    sbc size
+    sta z_location
+    bcs +
+    dec z_location+1
+    
++   rts
+
+dec_location_by_1
+    lda z_location
+    sec
+    sbc #1
+    sta z_location
+    bcs +
+    dec z_location+1
+    
++   rts

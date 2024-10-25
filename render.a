@@ -1,4 +1,4 @@
-﻿; this renders 1 module per petscii-character
+; this renders 1 module per petscii-character
 ; so, output is limited to nr of lines on screen (23 on vic20, 25 on all the other machines)
 ; that leaves the vic20 with version 1 codes and all others with version 2 codes
 render

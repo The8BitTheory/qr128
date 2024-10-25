@@ -1,4 +1,4 @@
-﻿; this writes the
+; this writes the
 ; - timing patterns (horizontal and vertical).
 ;   starting at row and column 6 (zero-based), starting with dark
 ; - finder patterns (top left, top right, bottom left)
@@ -25,8 +25,8 @@ write_patterns
     bne -
     
     ; write modules, starting with dark
-    lda #z_location   ; setup for indsta
-    sta $02b9
+    ;lda #z_location   ; setup for indsta
+    ;sta $02b9
     
     ldy #0
 -   lda #1
@@ -91,7 +91,7 @@ write_patterns
     
     jsr set_location_to_data
     jsr .do_finder_square
-    jsr .dec_location_by_1
+    jsr dec_location_by_1
     ldy #8
     jsr .do_horizontal_y_zeroes
 
@@ -110,7 +110,7 @@ write_patterns
     dey
     bne -
     
-    jsr .dec_location_by_1
+    jsr dec_location_by_1
     ldy #8
     jsr .do_horizontal_y_zeroes
     lda z_location
@@ -141,7 +141,7 @@ write_patterns
     dec z_location+1
     
 +   jsr .do_finder_square
-    jsr .dec_location_by_1
+    jsr dec_location_by_1
     ldy #8
     jsr .do_horizontal_y_zeroes
 
@@ -163,26 +163,17 @@ write_patterns
 
     rts
     
-.do_vertical_y_zeroes
--   lda #0
-    sta (z_location),y
+;.do_vertical_y_zeroes
+;-   lda #0
+;    sta (z_location),y
     
-    jsr dec_line
+;    jsr dec_line
+;    
+;    dey
+;    bne -
+;    
+;    rts
     
-    dey
-    bne -
-    
-    rts
-    
-.dec_location_by_1
-    lda z_location
-    sec
-    sbc #1
-    sta z_location
-    bcs +
-    dec z_location+1
-    
-+   rts
 
 
     ;this prints the following pattern
@@ -279,9 +270,10 @@ write_patterns
 
 ++  sta (z_location),y
     iny
+    lsr z_temp
     lda z_temp
-    lsr
-    sta z_temp
+;    lsr
+;    sta z_temp
     bne -
         
     jsr inc_line
@@ -293,19 +285,7 @@ write_patterns
     rts
 
 .set_location_end
-    jsr set_location_to_data
-    
-    lda z_location
-    clc
-    adc matrixSize
-    sta z_location
-    bcc +
-    inc z_location+1
-    
-+   lda z_location+1
-    clc
-    adc matrixSize+1
-    sta z_location+1
+    jsr set_location_datastream
     
     rts
   
