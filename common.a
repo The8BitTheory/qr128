@@ -48,3 +48,12 @@ dec_location_by_1
     dec z_location+1
     
 +   rts
+
+inc_location_by_1
+    clc
+    adc #1
+    sta z_location
+    bcc +
+    inc z_location+1
+
++   rts

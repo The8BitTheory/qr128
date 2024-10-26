@@ -174,15 +174,10 @@ writeAndAdvance
     ;z_location2=z_location2-size+1
     jsr dec_line
 
-    clc
-;    lda z_location
-    adc #1
-    sta z_location
-    bcc +
-    inc z_location+1
+    jsr inc_location_by_1
     
 ; check if we moved outside of the matrix (ie went to before the first row). if output < m_startAddress: change direction
-+   lda z_location+1
+    lda z_location+1
     cmp .m_startAddress+1
     beq +
     jmp .endAdvWriteIdx2
@@ -231,15 +226,10 @@ writeAndAdvance
     ; move one row down and one module to the right
     ;W=W+L+1
     jsr inc_line
-    
-    clc
-    adc #1
-    sta z_location
-    bcc +
-    inc z_location+1
+    jsr inc_location_by_1
 
 ; check if we moved outside of the matrix (ie went to past the last row). if output > m_endAddress: change direction
-+   lda z_location+1
+    lda z_location+1
     cmp .m_endAddress+1
     beq +
     jmp .endAdvWriteIdx2

@@ -87,8 +87,6 @@ bytes_to_stream
     iny
     sta z_counter1    ; z_counter1 is used by the next routine (ecc-calculation) to have the right write-offset
     
-    
-    
     rts
     
     
@@ -122,11 +120,4 @@ writeToStream
     sta z_temp
     
     rts
-    
-    
-    
-    
-    
-    
-    
     

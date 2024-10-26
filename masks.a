@@ -131,98 +131,83 @@ calc_xor_masks
     
     jsr .clean_format_modules_hor
 
-    lda .pattern100
-    sta z_location2
-    lda .pattern100+1
-    sta z_location2+1
-    
-    lda #64
-    sta z_temp
-    lda .bit1
-    sta .m_bit
+    jsr .set_pattern_100
     jsr .write_format_modules_hor
     
-    lda .pattern101
-    sta z_location2
-    lda .pattern101+1
-    sta z_location2+1
-    
-    lda #64
-    sta z_temp
-    lda .bit2
-    sta .m_bit
+    jsr .set_pattern_101
     jsr .write_format_modules_hor
     
-    lda .pattern110
-    sta z_location2
-    lda .pattern110+1
-    sta z_location2+1
-
-    lda #64
-    sta z_temp
-    lda .bit3
-    sta .m_bit
+    jsr .set_pattern_110
     jsr .write_format_modules_hor
 
-    lda .pattern111
-    sta z_location2
-    lda .pattern111+1
-    sta z_location2+1
-
-    lda #64
-    sta z_temp
-    lda .bit4
-    sta .m_bit
+    jsr .set_pattern_111
     jsr .write_format_modules_hor
     
     jsr .clean_format_modules_vert
-    ;---------------
-    ; rts here is for debug
-    ; -------------
-    ;rts
 
-    lda .pattern100
-    sta z_location2
-    lda .pattern100+1
-    sta z_location2+1
-    lda .bit1
-    sta .m_bit
-    lda #64
-    sta z_temp
+    jsr .set_pattern_100
     jsr .write_format_modules_vert
     
-    lda .pattern101
-    sta z_location2
-    lda .pattern101+1
-    sta z_location2+1
-    lda #64
-    sta z_temp
-    lda .bit2
-    sta .m_bit
+    jsr .set_pattern_101
     jsr .write_format_modules_vert
     
-    lda .pattern110
-    sta z_location2
-    lda .pattern110+1
-    sta z_location2+1
-    lda #64
-    sta z_temp
-    lda .bit3
-    sta .m_bit
+    jsr .set_pattern_110
     jsr .write_format_modules_vert
     
-    lda .pattern111
-    sta z_location2
-    lda .pattern111+1
-    sta z_location2+1
-    lda #64
-    sta z_temp
-    lda .bit4
-    sta .m_bit
+    jsr .set_pattern_111
     jsr .write_format_modules_vert
 
     rts
 
+.set_pattern_100
+    lda .pattern100
+    sta z_location2
+    lda .pattern100+1
+    sta z_location2+1
+    lda #64
+    sta z_temp
+    lda .bit1
+    sta .m_bit
+    
+    rts
+
+.set_pattern_101
+    lda .pattern101
+    sta z_location2
+    lda .pattern101+1
+    sta z_location2+1
+    lda #64
+    sta z_temp
+    lda .bit2
+    sta .m_bit
+    
+    rts
+
+.set_pattern_110
+    lda .pattern110
+    sta z_location2
+    lda .pattern110+1
+    sta z_location2+1
+    lda #64
+    sta z_temp
+    lda .bit3
+    sta .m_bit
+    
+    rts
+
+.set_pattern_111
+    lda .pattern111
+    sta z_location2
+    lda .pattern111+1
+    sta z_location2+1
+    lda #64
+    sta z_temp
+    lda .bit4
+    sta .m_bit
+    
+    rts
+    
+    
 .write_format_modules_hor
     ldy #0
     

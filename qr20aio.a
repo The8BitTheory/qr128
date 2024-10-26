@@ -9,13 +9,14 @@ z_counter2  = $0a     ;VERCK
 
 *= $1001
 
-    ; problem with 22 chars and up
+    ; problem with 28 chars and up
+    ;$1979 - 26 chars
     
     ;10 t$=""
     !byte $22,$10,$0a,$00,$54,$24,$b2,$22
-    !pet "https://www.forum64.de"
-    ;!pet "https://www.orf.at/abc"
-    ;!pet "https://github.com/The8BitTheory/"
+    ;!pet "https://www.forum64.de"
+    ;!pet "http://www.orf.at"
+    !pet "https://github.com/The8BitTheory/qr128"
     ;!pet "https://www.github.com/the8bittheory/"
     ;!pet "https://www.youtube.com/@the8bittheory/"
     !byte $22,$00
@@ -25,8 +26,8 @@ z_counter2  = $0a     ;VERCK
     !pet "36879,1"
     !byte $3a,$97
     !pet "646,1"
-    !byte $3a,$99,$22,$93,$11,$11,$11,$11,$11,$11,$11,$11,$11,$11,$11,$11,$11,$11,$11,$11,$22,$00
-    
+    !byte $3a,$99,$22,$93,$22,$3a,$97,$32,$31,$34,$2c,$31,$35,$00
+    ;poke 21
     ;20 poke
     !byte $5c,$10,$14,$00,$97,$20,$37,$38,$30,$2c,$c6,$28,$22,$54,$22,$29,$00
     
@@ -61,9 +62,9 @@ start
 
     jsr render
 
-;    lda size
-;    ldx #<data
-;    ldy #>data
+    lda size
+    ldx #<data
+    ldy #>data
     
     rts
     
