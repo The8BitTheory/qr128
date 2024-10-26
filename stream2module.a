@@ -155,8 +155,6 @@ writeAndAdvance
 
     ; check value of the new output location. if it's not 128, it's occupied already and we need to keep advancing
     jsr .do_indfet
-;    ldx #0
-;    lda (z_location,x)
     bit .m_128
     beq .advWriteIdx2
 
@@ -192,8 +190,6 @@ writeAndAdvance
     inc .m_curCol
  
     jsr .do_indfet
-;    ldx #0
-;    lda (z_location,x)
     bit .m_128         ;128 means, new location is free to write
     beq .advWriteIdx1 
     
