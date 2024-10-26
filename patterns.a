@@ -113,13 +113,10 @@ write_patterns
     jsr dec_location_by_1
     ldy #8
     jsr .do_horizontal_y_zeroes
-    lda z_location
-    clc
-    adc #1
-    sta z_location
-    bcc +
-    inc z_location+1
-+   jsr inc_line
+ 
+    jsr inc_location_by_1
+
+    jsr inc_line
     jsr .do_finder_square
     
     
@@ -272,8 +269,6 @@ write_patterns
     iny
     lsr z_temp
     lda z_temp
-;    lsr
-;    sta z_temp
     bne -
         
     jsr inc_line

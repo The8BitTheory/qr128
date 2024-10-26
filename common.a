@@ -50,6 +50,7 @@ dec_location_by_1
 +   rts
 
 inc_location_by_1
+    lda z_location
     clc
     adc #1
     sta z_location
