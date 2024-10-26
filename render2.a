@@ -5,24 +5,6 @@
 render
 
 !zone render
-    ;set screenram
-    lda #$0
-    sta z_location2
-    lda $0288
-    sta z_location2+1
-    
-    ;set linesize (use rsDivisorOffset because we don't need it any longer at this stage)
-    ldx $d5
-    inx
-    stx rsDivisorOffset
-    
-;    lda #0
-;    ldx rsDivisorOffset
-;-   sta (z_location2,x)
-;    dex
-;    bne -
-
-    
     jsr set_location_to_data
     ldy #0                    ;y holds the readcolumn (reset to zero after eol is reached)
     

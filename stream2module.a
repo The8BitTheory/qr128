@@ -64,7 +64,7 @@ stream_to_module
     jsr dec_location_by_1
     
     
-+   ldx size
+    ldx size
     dex
     stx .m_curCol
     
@@ -151,7 +151,7 @@ writeAndAdvance
 .advWriteIdx1
     jsr dec_location_by_1
     
-+   dec .m_curCol
+    dec .m_curCol
 
     ; check value of the new output location. if it's not 128, it's occupied already and we need to keep advancing
     jsr .do_indfet

@@ -7,41 +7,63 @@ z_temp      = $02
 z_counter1  = $08     ;ENDCHR
 z_counter2  = $0a     ;VERCK
 
-*= $1000
+*= $1001
+
+    ; problem with 22 chars and up
     
-    ;!byte $00,$22,$10,$0a,$00,$54,$24,$b2,$22,$48,$54,$54,$50,$53,$3a,$2f
-    ;!byte $2f,$57,$57,$57,$2e,$46,$4f,$52,55,$4d,$36,$34,$2e,$44,$45,$2f
-    ;!byte $22,$00,$33,$10,$14,$00,$97,$20,$37,$38,$30,$2c,$c6,$28,$22,$54
-    ;!byte $22,$29,$00,$3e,$10,$1e,$00,$9e,$20,$34,$31,$36,$30,$00,$00,$00
+    ;10 t$=""
+    !byte $22,$10,$0a,$00,$54,$24,$b2,$22
+    !pet "https://www.forum64.de"
+    ;!pet "https://www.orf.at/abc"
+    ;!pet "https://github.com/The8BitTheory/"
+    ;!pet "https://www.github.com/the8bittheory/"
+    ;!pet "https://www.youtube.com/@the8bittheory/"
+    !byte $22,$00
     
+    ;15 poke,poke,print
+    !byte $4b,$10,$0f,$00,$97
+    !pet "36879,1"
+    !byte $3a,$97
+    !pet "646,1"
+    !byte $3a,$99,$22,$93,$11,$11,$11,$11,$11,$11,$11,$11,$11,$11,$11,$11,$11,$11,$11,$11,$22,$00
     
-    !byte $00,$22,$10,$0a,$00,$54,$24,$b2,$22,$48,$54,$54,$50,$53,$3a,$2f
-    !byte $2f,$57,$57,$57,$2e,$46,$4f,$52,$55,$4d,$36,$34,$2e,$44,$45,$2f
-    !byte $22,$00,$3b,$10,$0f,$00,$97,$33,$36,$38,$37,$39,$2c,$31,$3a
-    !byte $97,$36,$34,$36,$2c,$31,$3a,$99,$22,$93
-    !byte $11,$11,$11,$11,$11,$11,$11,$11,$11,$11,$11,$11,$11,$11,$11,$11
-    !byte $22,$00,$4d,$10
-    !byte $14,$00,$97,$20,$37,$38,$30,$2c,$c6,$28,$22,$54
-    !byte $22,$29,$00,$57,$10,$1e,$00,$9e,$20
-    !byte $34,$32,$30,$37,$3a,$9e,$34,$32,$31,$33
-    !byte $00,$00,$00
+    ;20 poke
+    !byte $5c,$10,$14,$00,$97,$20,$37,$38,$30,$2c,$c6,$28,$22,$54,$22,$29,$00
+    
+    !basic 30,start
+    ;!byte $00
+
+    
+    !byte $00,$00
 
 start
     jsr init
-    jmp +
-    jmp render
+    ;jmp +
+ ;   jmp render
     ;---end
     
-+   jsr p2a
+    jsr p2a
     jsr bytes_to_stream
     jsr calc_xor_masks
     jsr rs
     jsr write_patterns
     jsr stream_to_module
 
-    lda size
-    ldx #<data
-    ldy #>data
+    ;set screenram
+    lda #$0
+    sta z_location2
+    lda $0288
+    sta z_location2+1
+    ;set linesize (use rsDivisorOffset because we don't need it any longer at this stage)
+    ldx $d5
+    inx
+    stx rsDivisorOffset
+
+    jsr render
+
+;    lda size
+;    ldx #<data
+;    ldy #>data
     
     rts
     
@@ -65,6 +87,5 @@ m_ypos          !byte 0
 !source "patterns.a"        ; this writes timing, alignment, finder patterns etc.
 !source "stream2module.a"
 !source "render2.a"
-
 
 data    !byte 0

@@ -162,19 +162,6 @@ write_patterns
     bne -
 
     rts
-    
-;.do_vertical_y_zeroes
-;-   lda #0
-;    sta (z_location),y
-    
-;    jsr dec_line
-;    
-;    dey
-;    bne -
-;    
-;    rts
-    
-
 
     ;this prints the following pattern
     ;XXXXXXX

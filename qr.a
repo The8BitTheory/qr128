@@ -13,23 +13,35 @@ z_counter1  = $0a     ;ENDCHR
 z_counter2  = $0c     ;VERCK
 
 *= $1300
-;*= $C000
 
     jsr init
-    jmp +
-    jmp render
+;    jmp +
+;    jmp render
     ;---end
     
-+   jsr p2a
+    jsr p2a
     jsr bytes_to_stream
     jsr calc_xor_masks
     jsr rs
     jsr write_patterns
     jsr stream_to_module
+
+    ;set screenram
+    lda #$0
+    sta z_location2
+    ;lda $03ab
+    lda #$4
+    sta z_location2+1
+    ;set linesize (use rsDivisorOffset because we don't need it any longer at this stage)
+    ldx #39
+    inx
+    stx rsDivisorOffset
+
+    jsr render
         
-    lda size
-    ldx #<data
-    ldy #>data
+    ;lda size
+    ;ldx #<data
+    ;ldy #>data
     
     rts
     

@@ -50,7 +50,7 @@ render
 .inc_line2
     lda z_location2
     clc
-    adc #40
+    adc rsDivisorOffset
     sta z_location2
     bcc +
     inc z_location2+1
