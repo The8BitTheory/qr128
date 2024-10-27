@@ -1,0 +1,123 @@
+; this writes bytes to stream
+; content bytes are shifted one nybble (due to the mode nybble)
+; padding and ecc bytes are written 1:1, thanks due to filling up the last content byte
+
+;*= $1300
+
+
+bytes_to_stream
+; calculate start address of datastream (matrix end)
+
+    jsr set_location_datastream
+
+; write mode byte and first nybble of length byte
+    ldy #0
+    sty z_counter1    ;counter1 holds the datastream index (ie write index)
+    sty z_counter2    ;counter2 holds the input index (ie read index) (stop-condition: cmp contentLength)
+        
+    lda #64
+    sta z_temp
+    sta (z_location),y
+;    ldx #0
+;    jsr k_indsta
+    
+    lda contentLength
+    jsr writeToStream
+    inc contentLength   ;increase to make stop-condition easier to check
+
+; write content bytes
+-   ldy z_counter2
+    ;ldx #0
+    ;lda #z_location2
+    ;jsr k_indfet
+    lda (z_location2),y
+    
+    jsr writeToStream ;increases y to next write index (z_counter1)
+    cpy contentLength
+    beq +           ; all content written to stream. continue
+    
+    inc z_counter2  ; else: increase read index and continue with next character
+    jmp -
+    
+    ; write last byte. lower nybble is left to zero
++   ldy z_counter1
+    sta (z_location),y
+    ;ldx #0
+    ;jsr k_indsta    ;Acc should still hold z_temp, $02b9 should still hold z_location
+    iny
+    sty z_counter1
+    
+
+; write padding bytes 0xEF 0x11. length is streamlength - contentlength - ecclength (eg 134-98-26=10)
+    dec contentLength    ;revert the increase from the beginning of this routine
+    sec
+    lda streamLength
+    sbc contentLength
+    sbc eccLength
+    sbc #2            ;minus 2 because of mode-byte and length-byte
+    
+    beq +             ;if length of padding bytes is zero, skip this part.
+    
+    sta z_counter2    ;store padding length in counter
+    
+
+    ;y is still current with z_counter1 at the position of the last content byte
+-   ;ldx #0
+    lda #$ec
+    sta (z_location),y
+    ;jsr k_indsta
+    iny
+    dec z_counter2
+    beq +
+
+    ;ldx #0
+    lda #$11
+    sta (z_location),y
+    ;jsr k_indsta
+    iny
+    dec z_counter2
+    
+    bne -
+    
+    ;finally, write one zero byte
++   lda #0
+    sta (z_location),y
+    ;ldx #0
+    ;jsr k_indsta
+    iny
+    sta z_counter1    ; z_counter1 is used by the next routine (ecc-calculation) to have the right write-offset
+    
+    rts
+    
+    
+    
+writeToStream
+    ;write upper nybble of current value to lower nybble of current stream-byte
+    ; so we need to OR  the current value with the current stream-byte
+    pha       ;put A on stack so we can recover the value after shifting right
+    
+    lsr
+    lsr
+    lsr
+    lsr
+    ora z_temp
+    
+    ldy z_counter1
+    sta (z_location),y
+    ; a holds the ORed value
+    ;ldx #0
+    ;jsr k_indsta
+    
+    iny
+    sty z_counter1
+    
+    ;now shift left, so we can store the lower nybble of the value as the upper nybble of the next stream-byte
+    pla
+    asl
+    asl
+    asl
+    asl
+    sta z_temp
+    
+    rts
+    

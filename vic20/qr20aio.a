@@ -1,0 +1,110 @@
+
+!to "qr20aio.prg",cbm
+
+z_location  = $fb     ;$fa-$fb for storing indexed addresses
+z_location2 = $fd     ;$fc-$fd for storing indexed addresses
+z_temp      = $02
+z_counter1  = $08     ;ENDCHR
+z_counter2  = $0a     ;VERCK
+
+*= $1001
+
+    ;75 characters fit into RAM
+    
+    ;5 t$=""
+    !byte $29,$10,$05,$00,$54,$24,$b2,$22
+    !pet "github.com/the8bittheory/qr128"
+    !byte $22,$00
+    
+    !byte $3e,$10,$0a,$00,$54,$24,$b2,$22,$48,$54,$54,$50,$53,$3a,$2f,$2f,$22,$aa,$54,$24,$00
+    
+    ;15 poke,poke,print
+    !byte $61,$10,$0f,$00,$97
+    !pet "36879,1"
+    !byte $3a,$97
+    !pet "646,1"
+    !byte $3a,$99,$22,$93,$22,$3a,$97,$32,$31,$34,$2c,$31,$36,$3a,$99,$00
+    ;poke 21
+    
+    ;20 poke
+    !byte $89,$10,$14,$00,$97,$37,$38,$30,$2c,$c6,$28,$22,$54,$22,$29
+    !byte $3a
+    !byte $99,$54,$24,$3a
+    
+    ;!basic 40,start
+    ;!byte $83,$10,$28,$00,
+    !byte $3a,$9e
+    !byte '0' + start % 10000 / 1000
+    !byte '0' + start % 1000 / 100
+    !byte '0' + start % 100 / 10
+    !byte '0' + start % 10
+    ;!byte $00
+    
+    ;print "press key..."
+    ;!byte $94,$10,$2d,$00
+    !byte $3a,$99,$22,$50,$52,$45,$53,$53,$20,$4b,$45,$59,$22,$00
+    
+    ;get i$
+    !byte $9b,$10,$32,$00,$a1,$49,$24,$3a,$8b,$49,$24,$b2,$22,$22,$a7,$35,$30,$00
+    
+    ;print "url without"
+    !byte $b4,$10,$37,$00,$99,$22,$55,$52,$4c,$20,$57,$49,$54,$48,$4f,$55,$54,$20,$48,$54,$54,$50,$53,$22,$00
+    
+    ;input t$
+    !byte $c0,$10,$3c,$00,$85,$54,$24,$3a,$89,$31,$30,$00
+    
+    !byte $00,$00
+
+start
+    jsr init
+    ;jmp +
+ ;   jmp render
+    ;---end
+    
+    jsr p2a
+    jsr bytes_to_stream
+    jsr calc_xor_masks
+    jsr rs
+    jsr write_patterns
+    jsr stream_to_module
+
+    ;set screenram
+    lda #$0
+    sta z_location2
+    lda $0288
+    sta z_location2+1
+    ;set linesize (use rsDivisorOffset because we don't need it any longer at this stage)
+    ldx $d5
+    inx
+    stx rsDivisorOffset
+
+    jsr render
+
+    lda size
+    ldx #<data
+    ldy #>data
+    
+    rts
+    
+size            !byte 0   ;size of one axis-length of the final matrix
+contentLength   !byte 0
+eccLength       !byte 0   ;nr of ecc bytes to generate
+streamLength    !byte 0
+matrixSize      !byte 0,0 ;size of the matrix in modules (1 byte per module)
+rsDivisorOffset !byte 0
+m_xpos          !byte 0
+m_ypos          !byte 0
+
+!source "common.a"
+!source "init64.a"
+!source "p2asb.a"           ; reads petscii bytes from z_location and writes ascii to z_location2 (which is matrix-start)
+!source "bytes2stream.a"    ; reads ascii from z_location2 and writes into datastream at z_location (=data+matrix_size)
+                            ; z_counter1 holds the right offset for rs.a to continue using it.
+!source "masks.a"           ; this clears the matrix memory area and calculates all the xor-masks
+!source "rs.a"              ; reads content bytes from datastream (z_location) and writes ecc bytes to 
+                            ; z_location2(=z_location + z_counter1)
+!source "patterns.a"        ; this writes timing, alignment, finder patterns etc.
+!source "stream2module.a"
+!source "render2.a"
+
+data    !byte 0

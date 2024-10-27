@@ -1,0 +1,244 @@
+; reed-solomon error correction calculation for use in qr-codes
+; writes the resulting ecc bytes directly into the right memory position
+
+
+;!to "reedsolomon.bin",cbm
+
+;!source <cbm/c128/kernal.a>
+
+; calling this routine (paramters: datastream, output)
+
+;5 DEF FN HB(ZZ)=DEC(MID$(HEX$(ZZ),3,1))
+;6 DEF FN LB(ZZ)=DEC(RIGHT$(HEX$(ZZ),1))
+; 10 rem write locations of dataStream and Output
+; 20 ls=15018:lo=ld+26
+; 40 poke dec("fa"),fn lb(ls):poke dec("fb"),fn hb(ls)
+; 50 poke dec("fc"),fn lb(lo):poke dec("fd"),fn hb(lo)
+
+;z_location =     $fa   ;$fa-$fb - pointer to the address where to read from and write to (length 108)
+;z_location2 =    $fc   ;$fc-$fd - holds the intermediary and final result of reed solomon fec calculation
+
+!zone reedSolomon
+
+;divisor    =   $03e4   ; current divisor
+;rsfactor =     $03e5
+
+;rsmulres =     $03e6   ; result of rs-multiply
+;rsmul1 =       $03e7   ; rs-multiply temp var 1
+;rsmul2 =       $03e9   ; rs-multiply temp var 2
+
+m_divisors =    $0d    ;$0d-$0e
+;loopc =        $03ed   ; loop counter in rsremainder for the loop that contains rsmultiply
+
+;rsmulx =       $03ee   ; store and recover x-reg here when calling rsmultiply
+;rsmuly =       $03ef   ; store and recover y-reg here when calling rsmultiply
+
+
+
+;*= $1300
+rs
+    jsr set_location_datastream
+    
+    clc
+    lda z_location      ; z_location is where we're reading from (start of datastream)
+    adc streamLength
+    sta z_location2     ; z_location2 is where we're writing to (ecc position in datastream)
+    
+    lda z_location+1
+    adc #0
+    sta z_location2+1
+    
+    sec
+    lda z_location2
+    sbc eccLength
+    sta z_location2
+    bcs +
+    
+    dec z_location2
+    
+    ; clear result area
++   ldy eccLength
+    lda #0
+-   sta (z_location2),y
+    dey
+    bpl -
+    
+    ; set divisor address according to version
+    clc
+    lda #<rsdivisors
+    adc rsDivisorOffset
+    sta m_divisors
+    
+    lda #>rsdivisors
+    adc #0
+    sta m_divisors+1
+    
+    ;ldy #datastream_end-datastream
+    sec
+    lda streamLength
+    sbc eccLength
+    sta z_counter2
+    
+    ldy #0
+    sty z_counter1
+
+rsremainder:
+    ldy z_counter1
+    lda (z_location),y
+    
+    ldx #0
+    eor (z_location2,x)
+    sta .rsfactor
+    
+    ldy #0
+    ; remove first element from result-array
+    ldx eccLength
+    dex
+-   iny
+    lda (z_location2),y
+    dey
+    sta (z_location2),y
+    iny
+    
+    dex
+    bpl -
+    
+    ; add zero to last position
+    lda #0
+    sta (z_location2),y
+    
+    ldx eccLength
+    stx .loopc
+    
+    ldy #0
+    
+-   lda (m_divisors),y
+    sta .divisor
+
+    jsr rsmultiply
+    
+    eor (z_location2),y
+    sta (z_location2),y
+    
+    iny
+    dex
+    bne -
+    
+    dec z_counter2
+    beq .end
+    
+    inc z_counter1
+    jmp rsremainder
+    
+.end:
+    rts
+    
+    ;xreg=factor, acc=divisor (y in basic)
+rsmultiply:
+
+    stx .rsmulx
+    sty .rsmuly
+    
+    lda #0
+    sta .rsmulres
+    
+    ldy #7
+    
+--  clc
+    asl
+    sta .rsmul1       ; B in the Basic implementation
+    bcc +
+    inc .rsmul1+1
+    
++   lda .rsmulres     ; R in the Basic implementation
+    and #128
+    cmp #128            ; C=INT(R/128)
+    
+    bne +
+    ;c=c*285
+    lda #$1d
+    sta .rsmul2
+    
+    lda #$01
+    sta .rsmul2+1
+    jmp ++
+    
++   sta .rsmul2
+    sta .rsmul2+1
+    
+    ;r=xor(b,c)
+++  lda .rsmul1
+    eor .rsmul2
+    sta .rsmulres
+    
+    ;----------------
+    
+    ;factor >>> i
+    tya
+    tax
+    
+    lda .rsfactor
+    cpx #0
+    beq +
+-   lsr
+    dex
+    bne -
+    
+    ;B=B AND 1
++   and #1
+    sta .rsmul1
+
+    beq +
+    
+    lda .divisor
+    
+    ;B=B*X
+    
++   sta .rsmul1
+    
+    ;R=XOR(R,B) AND 255
+    eor .rsmulres
+    sta .rsmulres
+
+    dey
+    bpl --
+    
+    ldx .rsmulx
+    ldy .rsmuly
+
+    rts
+    
+
+rsdivisors
+    ; version 1
+    !byte 127,122,154,164,11,68,117
+    
+    ; version 2
+    !byte 216,194,159,111,199,94,95,113,157,193
+    
+    ; version 3
+    !byte 29,196,111,163,112,74,10,105,105,139,132,151,32,134,26
+    
+    ; version 4
+    ;!byte 152,185,240,5,111,99,6,220,112,150,69,36,187,22,228,198
+    ;!byte 121,121,165,174
+    !byte $98,$B9,$F0,$5,$6F,$63,$6,$DC,$70,$96,$45,$24,$BB,$16,$E4,$C6
+    !byte $79,$79,$A5,$AE
+
+    ; version 5
+    ;!byte 246,51,183,4,136,98,199,152,77,56,206,24,145,40,209,117
+    ;!byte 233,42,135,68,70,144,146,77,43,94
+;    !byte $F6,$33,$B7,$4,$88,$62,$C7,$98,$4D,$38,$CE,$18,$91,$28,$D1,$75
+;    !byte $E9,$2A,$87,$44,$46,$90,$92,$4D,$2B,$5E
+    
+.divisor     !byte 0   ; current divisor
+.rsfactor    !byte 0
+
+.rsmulres    !byte 0; result of rs-multiply
+.rsmul1      !byte 0,0   ; rs-multiply temp var 1
+.rsmul2      !byte 0,0   ; rs-multiply temp var 2
+
+.loopc       !byte 0   ; loop counter in rsremainder for the loop that contains rsmultiply
+
+.rsmulx      !byte 0   ; store and recover x-reg here when calling rsmultiply
+.rsmuly      !byte 0   ; store and recover y-reg here when calling rsmultiply

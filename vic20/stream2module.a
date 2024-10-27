@@ -1,0 +1,263 @@
+; this writes the bytes of the datastream into the matrix that's finally to become the qr-code
+; this still needs to be ORed accordingly to become a valid qr-code
+
+; procedure
+; - read bit by bit from datastream bytes
+; - after each written bit (1=dark, 0=light), advance the write index in a zig-zag pattern
+; - column 6 is always excluded and holds no information, as it only holds the administrative patterns
+; 
+; variables needed
+; - writeIndex. starts at right-bottom corner (eg 1368 in a 0-based array). each module is a full byte
+; - current write direction. can be up or down
+; - current column index
+; 
+
+; all of the following values should be a variables, not hardcoded
+writeDirection =       1  ;1=up, 0=down
+
+;m_startAddress =   $03e4  ;$03e4-$03e5. absolute address of where the matrix starts. used for comparisons
+;m_endAddress  =    $03e6  ;$03e6-$03e7. absolute address of where the matrix ends. used for comparisons
+;m_curCol      =    $03e8  ;$03e6. current column to be written to
+;m_writeDirection = $03e9  ;$03e7. are we moving up or down when writing modules. 1=up, 0=down
+;m_one            = $03eb  ;holds the value 1. used for BIT operation
+;m_128            = $03ec  ;holds the value 128. used for BIT operation
+
+; z_location is matrix
+; z_location2 is datastream
+
+;!to "stream2mod.bin",cbm
+;*= $1306
+
+!zone stream2module
+
+    
+
+stream_to_module
+        
+    lda #0
+    sta .m_endAddress
+    sta .m_endAddress+1
+    
+    lda #<data
+    sta z_location2
+    sta .m_startAddress
+    lda #>data
+    sta z_location2+1
+    sta .m_startAddress+1
+            
+    lda z_location2
+    clc
+    adc matrixSize
+    sta z_location2
+    sta z_location
+    sta .m_endAddress
+    bcc +
+    inc z_location2+1
+    
++   lda z_location2+1
+    clc
+    adc matrixSize+1
+    sta z_location2+1
+    sta z_location+1
+    sta .m_endAddress+1
+    
+    jsr dec_location_by_1
+    
+    
+    ldx size
+    dex
+    stx .m_curCol
+    
+    
+    lda #writeDirection
+    sta .m_writeDirection
+
+    ; walk over bytes of datastream, split them into bits and write these as modules
+    ldy #0
+    sty z_counter1
+    
+--  ldx #128
+    stx z_temp              ;use for bit-comparison and shift left
+  
+-   ldy z_counter1
+    lda (z_location2),y
+    bit z_temp
+    beq +
+    lda #%01000001                 ;bit 6 set means data-module. bit 0 set means dark module
+    jmp ++
++   lda #%01000000                 ;bit 6 means data-module. bit 0 clear means light module
+    
+    
+++  jsr writeAndAdvance
+    ldy z_counter1
+
+    lsr z_temp
+    bne -
+    
+    iny
+    sty z_counter1
+    cpy streamLength
+    bne --
+    
+
+    rts
+    
+; writes the accumulator to the current write offset and then calculates the next offset position
+writeAndAdvance
+    ; temp-store new value of matrix-field
+    sta z_counter2
+    
+    ; load current value of matrix-field into Acc
+    ldy #0
+    lda (z_location),y
+    
+    ; OR the values
+    ora z_counter2
+    and #$7f
+
+    ; store the value in the matrix
+    
+    sta (z_location),y
+    
+    ; where are we in relation to column 6? (col 6 is skipped and it changes even-odd behavior of offset pos calc)
+    lda .m_curCol
+    cmp #6
+    bcs .advGt6     ;carry-flag set: col is larger than 6
+    jmp .advLt6     ;else: col is lower than 6
+                    ;if col equals 6, we also handle it as lower than 6, as this will skip the column
+
+    rts
+    
+.do_indfet
+    ldy #0
+    lda (z_location),y
+    
+    rts
+
+; do we advance in a column > 6 or <= 6?
+.advGt6
+    bit .m_one  
+    beq .advWriteIdx1 ; even columns go left first
+    jmp .advWriteIdx2 ; odd columns go diagonal up or down next
+
+        
+.advLt6
+    bit .m_one  
+    beq .advWriteIdx2 ; even columns go left first
+    jmp .advWriteIdx1 ; odd columns go diagonal up or down next
+
+
+; go one column to the left. that's -1 in the matrix and -1 for col
+.advWriteIdx1
+    jsr dec_location_by_1
+    
+    dec .m_curCol
+
+    ; check value of the new output location. if it's not 128, it's occupied already and we need to keep advancing
+    jsr .do_indfet
+    bit .m_128
+    beq .advWriteIdx2
+
+    rts
+
+; advance diagonal. makes a difference whether we go up or down
+.advWriteIdx2
+    lda .m_writeDirection
+    bit .m_one
+    bne .advUp
+    jmp .advDown
+
+.advUp
+    ;move one row up and one module to the right
+    ;z_location2=z_location2-size+1
+    jsr dec_line
+
+    jsr inc_location_by_1
+    
+; check if we moved outside of the matrix (ie went to before the first row). if output < m_startAddress: change direction
+    lda z_location+1
+    cmp .m_startAddress+1
+    beq +
+    jmp .endAdvWriteIdx2
+    
++   lda z_location
+    cmp .m_startAddress
+    bcc .changeDirectionToDown
+    
+    ; not changing direction. update col and check if new location is occupied
+
+.endAdvWriteIdx2
+    inc .m_curCol
+ 
+    jsr .do_indfet
+    bit .m_128         ;128 means, new location is free to write
+    beq .advWriteIdx1 
+    
+    ; new location not occupied. we're done.
+    rts
+    
+
+.changeDirectionToDown    
+    ;W=W+L-2:D=0:C=C-2
+    jsr inc_line
+    
+    sec
+    sbc #2
+    sta z_location
+    bcs +
+    dec z_location+1
+
+    ; write new direction
++   lda #0
+    sta .m_writeDirection
+    
+    ; update column information
+    dec .m_curCol
+    dec .m_curCol
+    
+    jmp .endAdvWriteIdx2
+
+
+.advDown
+    ; move one row down and one module to the right
+    ;W=W+L+1
+    jsr inc_line
+    jsr inc_location_by_1
+
+; check if we moved outside of the matrix (ie went to past the last row). if output > m_endAddress: change direction
+    lda z_location+1
+    cmp .m_endAddress+1
+    beq +
+    jmp .endAdvWriteIdx2
+    
++   lda z_location
+    cmp .m_endAddress
+    bcs .changeDirectionToUp
+    
+    jmp .endAdvWriteIdx2
+    
+.changeDirectionToUp
+    ;W=W-L-2:D=-1:C=C-2
+    jsr dec_line
+    
+    sec
+    sbc #2
+    sta z_location
+    bcs +
+    dec z_location+1
+    
++   lda #1
+    sta .m_writeDirection
+    
+    dec .m_curCol
+    dec .m_curCol
+    
+    jmp .endAdvWriteIdx2
+    
+    
+.m_startAddress    !byte 0,0  ;$03e4-$03e5. absolute address of where the matrix starts. used for comparisons
+.m_endAddress      !byte 0,0  ;$03e6-$03e7. absolute address of where the matrix ends. used for comparisons
+.m_curCol          !byte 0  ;$03e6. current column to be written to
+.m_writeDirection  !byte 0  ;$03e7. are we moving up or down when writing modules. 1=up, 0=down
+.m_one             !byte #1  ;holds the value 1. used for BIT operation
+.m_128             !byte #128  ;holds the value 128. used for BIT operation
