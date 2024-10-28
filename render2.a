@@ -86,7 +86,18 @@ render
 ++  eor z_temp
 
 .collect_value
-    ldx z_counter1
+    ;store final value of module in bit5 (ready to be rendered)
+    ;if module is dark, set bit 5 (if not, leave it untouched)
+    bit stream2module.m_one
+    beq +   
+
+    pha
+    lda #32
+    ora (z_location),y
+    sta (z_location),y
+    pla
+
++   ldx z_counter1
 -   beq +
     asl
     dex
@@ -128,7 +139,7 @@ render
     sta z_location2
     bcc +
     inc z_location2+1
-    
+        
 +   rts
 
 .modulechars  !byte 32,126,124,226,123,97,255,236,108,127,225,251,98,252,254,160

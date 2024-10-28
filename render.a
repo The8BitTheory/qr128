@@ -10,7 +10,7 @@ render
 .handle_col
     lda (z_location),y
     bit .m_64   ;is xor-bit set?
-    beq .write_value
+    bvc .write_value
     
     pha
     and #1
