@@ -78,7 +78,7 @@ render
     and #1
     sta z_temp
     pla
-    and .m_bit
+    and m_maskbit
     bne +
     lda #0
     jmp ++
@@ -88,16 +88,16 @@ render
 .collect_value
     ;store final value of module in bit5 (ready to be rendered)
     ;if module is dark, set bit 5 (if not, leave it untouched)
-    bit stream2module.m_one
-    beq +   
+;    bit stream2module.m_one
+;    beq +   
 
-    pha
-    lda #32
-    ora (z_location),y
-    sta (z_location),y
-    pla
+;    pha
+;    lda #32
+;    ora (z_location),y
+;    sta (z_location),y
+;    pla
 
-+   ldx z_counter1
+    ldx z_counter1
 -   beq +
     asl
     dex
@@ -144,4 +144,3 @@ render
 
 .modulechars  !byte 32,126,124,226,123,97,255,236,108,127,225,251,98,252,254,160
 .m_64         !byte 64
-.m_bit        !byte 2

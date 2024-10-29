@@ -9,7 +9,12 @@ z_counter2  = $0a     ;VERCK
 
 *= $C000
 
-    jsr init
+    cpx #0
+    beq +     ;x-reg not set, ie no maskbit provided. go with default value of 2 (set down below)
+    stx m_maskbit
+    
++   jsr init
+    bcs +
 ;    jmp +
 ;    jmp render
     ;---end
@@ -38,6 +43,10 @@ z_counter2  = $0a     ;VERCK
     
     rts
     
+    ;content too long
++   lda #0
+    rts
+    
 size            !byte 0   ;size of one axis-length of the final matrix
 contentLength   !byte 0
 eccLength       !byte 0   ;nr of ecc bytes to generate
@@ -46,6 +55,7 @@ matrixSize      !byte 0,0 ;size of the matrix in modules (1 byte per module)
 rsDivisorOffset !byte 0
 m_xpos          !byte 0
 m_ypos          !byte 0
+m_maskbit       !byte 2
 
 !source "common.a"
 !source "init64.a"

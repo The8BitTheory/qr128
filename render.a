@@ -16,7 +16,7 @@ render
     and #1
     sta z_temp
     pla
-    and .m_bit
+    and m_maskbit
     bne +
     lda #0
     jmp ++
@@ -59,4 +59,3 @@ render
 
 .m_one        !byte 1
 .m_64         !byte 64
-.m_bit        !byte 2

@@ -11,21 +11,14 @@ z_counter2  = $0a     ;VERCK
 
     ;75 characters fit into RAM
     
-    ;5 h$="https://"
-    !byte $23,$10,$05,$00,$48,$24,$b2,$22
-    !pet "https://"
-    !byte $22,$3a
-    ;t$=""
+    !byte $31,$10,$05,$00
     !byte $54,$24,$b2,$22
-    !pet "github.com/the8bittheory/qr128"
+    !pet "https://github.com/the8bittheory/qr128"
     ;!pet "forum64.de"
     !byte $22,$00
     
-    ;10 t$=h$+t$
-    !byte $44,$10,$0a,$00,$54,$24,$b2,$48,$24,$aa,$54,$24,$00
-    
     ;15 poke,poke,print
-    !byte $67,$10,$0f,$00,$97
+    !byte $54,$10,$0f,$00,$97
     !pet "36879,1"
     !byte $3a,$97
     !pet "646,1"
@@ -33,7 +26,7 @@ z_counter2  = $0a     ;VERCK
     ;poke 21
     
     ;20 poke
-    !byte $8e,$10,$14,$00,$97,$37,$38,$30,$2c,$c6,$28,$22,$54,$22,$29
+    !byte $6e,$10,$14,$00,$97,$37,$38,$30,$2c,$c6,$28,$22,$54,$22,$29
     !byte $3a
     !byte $99,$54,$24,$3a
     
@@ -44,20 +37,10 @@ z_counter2  = $0a     ;VERCK
     !byte '0' + start % 1000 / 100
     !byte '0' + start % 100 / 10
     !byte '0' + start % 10
-    ;!byte $00
-    
-    ;print "press key..."
-    ;!byte $94,$10,$2d,$00
-    !byte $3a,$99,$22,$50,$52,$45,$53,$53,$20,$4b,$45,$59,$22,$00
-    
-    ;get i$
-    !byte $a0,$10,$32,$00,$a1,$49,$24,$3a,$8b,$49,$24,$b2,$22,$22,$a7,$35,$30,$00
-    
-    ;print "url without"
-    !byte $b6,$10,$37,$00,$99,$22,$55,$52,$4c,$20,$57,$49,$54,$48,$4f,$55,$54,$20,$22,$48,$24,$00
+    !byte $00
     
     ;input t$
-    !byte $c2,$10,$3c,$00,$85,$54,$24,$3a,$89,$31,$30,$00
+    !byte $98,$10,$3c,$00,$85,$54,$24,$3a,$89,$31,$35,$00
     
     !byte $00,$00
 
@@ -86,9 +69,9 @@ start
 
     jsr render
 
-    lda size
-    ldx #<data
-    ldy #>data
+    ;lda size
+    ;ldx #<data
+    ;ldy #>data
     
     rts
     
