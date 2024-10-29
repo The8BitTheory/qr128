@@ -1,8 +1,9 @@
 
 !to "qr64.bin.prg",cbm
 
-z_location  = $fb     ;$fa-$fb for storing indexed addresses
-z_location2 = $fd     ;$fc-$fd for storing indexed addresses
+z_location  = $fb     ;$fb-$fc for storing indexed addresses
+z_location2 = $fd     ;$fd-$fe for storing indexed addresses
+z_location3 = $14     ;$14-$15 LINNUM. we use this to write the "compressed" matrix
 z_temp      = $02
 z_counter1  = $08     ;ENDCHR
 z_counter2  = $0a     ;VERCK
@@ -38,8 +39,8 @@ z_counter2  = $0a     ;VERCK
     jsr render
 
     lda size
-    ldx #<data
-    ldy #>data
+    ldx z_location3   ;these are set in render2.a
+    ldy z_location3+1
     
     rts
     
@@ -48,7 +49,7 @@ z_counter2  = $0a     ;VERCK
     rts
     
 size            !byte 0   ;size of one axis-length of the final matrix
-contentLength   !byte 0
+contentLength   !byte 0   ;size of the provided URL, also used when writing the "compressed" matrix in render2.a
 eccLength       !byte 0   ;nr of ecc bytes to generate
 streamLength    !byte 0
 matrixSize      !byte 0,0 ;size of the matrix in modules (1 byte per module)

@@ -5,7 +5,7 @@
 ; x holds bank 1 address lb
 ; y holds bank 1 address hb
 init
-
+!zone init64
     sta z_temp  ;this holds the variable name
   
     ;first, find out where variable is stored  
@@ -118,6 +118,7 @@ init
     sta rsDivisorOffset
     jmp ++
     
+    ;input buffer on the c64 and vic20 is 88 characters, so we can't input content of this length
 ;+   cmp #107
 ;    bcs +
 ;    lda #37
@@ -135,9 +136,17 @@ init
 ;    jmp ++
 
 ; content too long for this    
-+   brk
-    nop
-    !pet "Content is too long.",0
++   ldx #0
+    ;sec
+-   lda .too_long,x
+    beq +
+    jsr $ffd2
+    inx
+    jmp -
+    
     
 ; done
++   sec
 ++  rts
+
+.too_long  !pet "content is too long.",0

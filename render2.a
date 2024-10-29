@@ -5,14 +5,26 @@
 render
 
 !zone render
+ 
     jsr set_location_to_data
     ldy #0                    ;y holds the readcolumn (reset to zero after eol is reached)
     
     ldx #0
     stx z_counter1            ;used for counting modules for display in a single character (used for bit shifting)
     stx z_counter2            ;z_counter2 temporarily holds the value of the 4 modules (the bit-shifted values)
+    stx contentLength         ;in this context, this should be read as "write position"
+    inc contentLength
+    
+    clc
+    lda #<data
+    adc matrixSize
+    sta z_location3
+    lda #>data
+    adc matrixSize+1
+    sta z_location3+1
     
     lda size
+    sta (z_location3),y
     sta m_ypos                ;used to check whether we moved below the last line
     lda #0
     sta m_xpos                ;the column for writing the petscii character that holds 4 modules
@@ -115,6 +127,29 @@ render
     lda .modulechars,x
     ldy m_xpos
     sta (z_location2),y
+    
+    ; write module character index to memory for later saving to disk
+    txa
+    pha
+    
+    lda m_xpos
+    bit stream2module.m_one  ;are we in an even or odd column?
+    bne +                     ;bne means bit set -> odd column -> OR value to memory with already written high nybble
+    
+    pla                       ;this needs to be written as the high nybble, shift it left
+    asl
+    asl
+    asl
+    asl
+    jmp ++                    ;don't OR, to keep the lower nybble clear for the next index-value
+    
++   pla
+    ora (z_location3),y       ;OR because this is the lower nybble and we need to combine it with the upper
+    
+++  ldy contentLength
+    
+    sta (z_location3),y
+    inc contentLength
     
     ldx #0
     stx z_counter1
