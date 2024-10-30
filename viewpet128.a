@@ -1,6 +1,7 @@
  ;view qrcode file
 
 
+
 z_location2     = $fd     ;$fd-$fe    screen-ram. indirect addressing via y
 
 z_readoff       = $fb

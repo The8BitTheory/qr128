@@ -15,7 +15,7 @@ z_counter2  = $0c     ;VERCK
 
 *= $1300
 
-    jmp .generate
+    ;jmp .generate
     ;jmp save
 
 
