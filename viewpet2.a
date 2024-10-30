@@ -1,6 +1,6 @@
 ;view qrcode file
 
-z_temp          = $02
+z_temp          = $339
 ;z_location      = $fb     ;$fb-$fc   input data. indexed addressing via x
 z_location2     = $fd     ;$fd-$fe    screen-ram. indirect addressing via y
 z_readoff       = $fb
@@ -12,17 +12,19 @@ m_lines_left    = $336     ;VERCK
 m_size          = $337
 m_screen_width  = $338
 
-*=$c000
-    ;stx z_location
-    ;sty z_location+1
+*=$0801
+;*=$1c01
+    !basic start
 
-    ;set screenram
+start
+    ;set screenram 
     lda #$0
     sta z_location2
-    lda $0288
+    lda $0288     ;($0400 for C64 and C128 VIC-IIe, $0)
     sta z_location2+1
-    ;set linesize (use rsDivisorOffset because we don't need it any longer at this stage)
-    ldx $d5
+    
+    ;set linesize 
+    ldx $d5       ;(39 for c64 and C128 VIC-IIe 
     inx
     stx m_screen_width
     
@@ -43,8 +45,7 @@ m_screen_width  = $338
     sta m_size
         
 -   ldx z_readoff
-    ;lda (z_location),y      ;z_location points to the datafile (containing screen codes, each byte is a 2x2 petscii character)
-    lda .data,x
+    lda .data,x             ;z_location points to the datafile (containing screen codes, each byte is a 2x2 petscii character)
 
     sta z_temp
     ;get higher nybble
@@ -77,21 +78,21 @@ render_char
     sta (z_location2),y
     iny
     cpy m_size
-    bne +
+    bne ++
     
     dec m_lines_left
     beq .done
     
-    ldy #0
-    ;sty z_writeoff
     lda z_location2
     clc
     adc m_screen_width
     sta z_location2
     bcc +
     inc z_location2+1
-
-+   sty z_writeoff
+    
++   ldy #0
+    
+++  sty z_writeoff
     
     clc
     rts
@@ -100,7 +101,6 @@ render_char
     sec
     rts
 
-;.modulechars      !byte 32,126,124,226,123,97,255,236,108,127,225,251,98,252,254,160
 ;                         0   1   2   3   4   5   6   7   8   9  10  11  12  13  14  15
 ;                         0   1   2   3   4   5   6   7   8   9   A   B   C   D   E   F
 .modulechars      !byte $20,$7E,$7C,$E2,$7B,$61,$FF,$EC,$6C,$7F,$E1,$FB,$62,$FC,$FE,$A0
