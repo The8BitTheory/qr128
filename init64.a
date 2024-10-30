@@ -49,6 +49,23 @@ init
     ldx #>data
     stx z_location2+1
     
+    ; clear memory area that's to be used
+    ; for version4 codes (33x33) that's 1089 bytes for the matrix
+    ;  plus 136 bytes for datastream and export processing
+    lda #0
+    ldx #0
+-   sta data,x
+    sta data+256,x
+    sta data+512,x
+    sta data+768,x
+    inx
+    bne -
+    
+    ldx #200
+-   sta data+1024,x
+    dex
+    bne -
+    
     lda contentLength
         
 ;calculate version.

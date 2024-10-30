@@ -1,0 +1,91 @@
+!zone save
+
+SETNAM = $FFBD
+SETFLS = $FFBA
+OPEN   = $FFC0
+CHKOUT = $FFC9
+READST = $FFB7
+CLOSE  = $FFC3
+CLRCHN = $FFCC
+CHROUT = $ffd2   
+
+save
+   
+    ; call SETNAM   
+    lda #fname_end-fname    ; file name size
+    ldx #<fname             ; file name vector
+    ldy #>fname             ; file name vector
+    jsr SETNAM              ; call SETNAM
+
+    ; call SETFLS
+    lda #$00
+    ldx $BA                 ; last used device number
+    bne +
+        ldx #$08            ; default to device 8
++   ldy #$00
+    jsr SETFLS              ; call SETLFS
+
+    ;call OPEN
+    jsr OPEN                ; call OPEN
+    bcs .error1             ; if carry set, the file could not be opened
+
+    ; call CHKOUT
+    ldx #$02                ; filenumber=2
+    jsr CHKOUT              ; file 2 now used as output
+
+    ; Copy border color to the file
+    jsr READST              ; call READST (read status byte)
+    bne .error2             ; write error
+    lda $d020               ; get byte from memory
+    jsr CHROUT              ; write to file
+
+    ldx #<message1         
+    ldy #>message1     
+    jsr printMessage
+
+.close
+    lda #$02      ; filenumber 2
+    jsr CLOSE     ; call CLOSE
+    jsr CLRCHN    ; call CLRCHN
+    rts
+
+.error1
+    ldx #<errorMsg1         
+    ldy #>errorMsg1   
+    jsr printMessage
+    jmp .close
+
+.error2
+    ldx #<errorMsg2         
+    ldy #>errorMsg2   
+    jsr printMessage    
+    jmp .close        
+
+fname:  !tx "DATA,S,W"
+fname_end:
+
+message0:   !by 141 : !scr"SAVING" : !by 0
+message1:   !by 141 : !scr"COLORS SAVED" : !by 0
+errorMsg1:  !by 141 : !scr"FILE NOT OPENED" : !by 0
+errorMsg2:  !by 17 : !scr"WRITE ERROR" : !by 0
+
+;==========================================================================
+; printMessage
+;   Prints null terminated string to the memory
+;   Input: x,y adress vector of text string 
+;==========================================================================
+temp     = $fb          ;zero page pointer
+
+printMessage:   
+    stx temp            ;save string pointer LSB
+    sty temp+1          ;save string pointer MSB
+    ldy #0              ;starting string index
+
+-   lda (temp),y        ;get a character
+    beq +               ;end of string
+        jsr CHROUT      ;print character
+        iny             ;next
+        bne -
+    inc temp+1             
+    bne -       
++ rts   

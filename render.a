@@ -4,6 +4,7 @@
 render
 
 !zone render
+
     jsr set_location_to_data
     ldy #0                    ;y holds the column (reset to zero after eol is reached)
     

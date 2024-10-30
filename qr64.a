@@ -8,17 +8,23 @@ z_temp      = $02
 z_counter1  = $08     ;ENDCHR
 z_counter2  = $0a     ;VERCK
 
+;m_size          = $334    ;820
+;m_contentLength = $335
+
+
 *= $C000
 
+    jmp .generate
+    jmp save
+
+
+.generate
     cpx #0
     beq +     ;x-reg not set, ie no maskbit provided. go with default value of 2 (set down below)
-    stx m_maskbit
+    stx render.m_maskbit
     
 +   jsr init
-    bcs +
-;    jmp +
-;    jmp render
-    ;---end
+    bcs .too_long
     
     jsr p2a
     jsr bytes_to_stream
@@ -45,7 +51,8 @@ z_counter2  = $0a     ;VERCK
     rts
     
     ;content too long
-+   lda #0
+.too_long
+    lda #0
     rts
     
 size            !byte 0   ;size of one axis-length of the final matrix
@@ -56,7 +63,6 @@ matrixSize      !byte 0,0 ;size of the matrix in modules (1 byte per module)
 rsDivisorOffset !byte 0
 m_xpos          !byte 0
 m_ypos          !byte 0
-m_maskbit       !byte 2
 
 !source "common.a"
 !source "init64.a"
@@ -69,6 +75,7 @@ m_maskbit       !byte 2
 !source "patterns.a"        ; this writes timing, alignment, finder patterns etc.
 !source "stream2module.a"
 !source "render2.a"
+!source "fsave.a"
 
 
 data    !byte 0

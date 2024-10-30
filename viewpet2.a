@@ -1,0 +1,126 @@
+;view qrcode file
+
+z_temp          = $02
+;z_location      = $fb     ;$fb-$fc   input data. indexed addressing via x
+z_location2     = $fd     ;$fd-$fe    screen-ram. indirect addressing via y
+z_readoff       = $fb
+z_writeoff      = $fc
+
+;m_readoff       = $334
+;m_writeoff      = $335     ;ENDCHR
+m_lines_left    = $336     ;VERCK
+m_size          = $337
+m_screen_width  = $338
+
+*=$c000
+    ;stx z_location
+    ;sty z_location+1
+
+    ;set screenram
+    lda #$0
+    sta z_location2
+    lda $0288
+    sta z_location2+1
+    ;set linesize (use rsDivisorOffset because we don't need it any longer at this stage)
+    ldx $d5
+    inx
+    stx m_screen_width
+    
+    
+    ldy #0
+    sty z_writeoff          ;write offset. writes a line, reset to zero, increase z_location2 by size
+    ldx #0
+    
+    ;lda (z_location),y
+    lda .data,x
+    inx
+    stx z_readoff           ;read offset. continuous until end of file
+    
+    clc
+    adc #1
+    lsr
+    sta m_lines_left
+    sta m_size
+        
+-   ldx z_readoff
+    ;lda (z_location),y      ;z_location points to the datafile (containing screen codes, each byte is a 2x2 petscii character)
+    lda .data,x
+
+    sta z_temp
+    ;get higher nybble
+    lsr
+    lsr
+    lsr
+    lsr
+    
+    jsr render_char
+    bcs .end
+
+    lda z_temp
+    and #$F
+
+    jsr render_char
+    
+    inc z_readoff
+    
+    jmp -
+    
+    
+.end
+    rts
+
+
+render_char
+    tax
+    lda .modulechars,x
+    ldy z_writeoff
+    sta (z_location2),y
+    iny
+    cpy m_size
+    bne +
+    
+    dec m_lines_left
+    beq .done
+    
+    ldy #0
+    ;sty z_writeoff
+    lda z_location2
+    clc
+    adc m_screen_width
+    sta z_location2
+    bcc +
+    inc z_location2+1
+
++   sty z_writeoff
+    
+    clc
+    rts
+    
+.done
+    sec
+    rts
+
+;.modulechars      !byte 32,126,124,226,123,97,255,236,108,127,225,251,98,252,254,160
+;                         0   1   2   3   4   5   6   7   8   9  10  11  12  13  14  15
+;                         0   1   2   3   4   5   6   7   8   9   A   B   C   D   E   F
+.modulechars      !byte $20,$7E,$7C,$E2,$7B,$61,$FF,$EC,$6C,$7F,$E1,$FB,$62,$FC,$FE,$A0
+
+.data             !byte $1d
+                  !byte $73,$35,$d6,$f0,$50,$57,$33,$55
+                  !byte $f5,$50,$7b,$3f,$70,$5f,$55
+                  !byte $53,$15,$7b,$00,$b1,$05,$31,$53
+                  !byte $33,$15,$d5,$91,$11,$33,$31,$39
+                  !byte $a1,$f5,$ab,$c8,$ff,$1a,$5d,$bc
+                  !byte $18,$28,$22,$7d,$3f,$11,$ff,$4b
+                  !byte $22,$7a,$4e,$4f,$08,$54,$a2,$99
+                  !byte $87,$f6,$a6,$f1,$01,$01,$a1,$10
+                  !byte $ad,$1c,$3d,$0c,$53,$c8,$b1,$38
+                  !byte $22,$24,$47,$01,$30,$21,$52,$78
+                  !byte $c0,$73,$f6,$47,$33,$5e,$c7,$f3
+                  !byte $95,$15,$05,$5f,$55,$84,$af,$4a
+                  !byte $f3,$f4,$55,$31,$5f,$68,$a6,$46
+                  !byte $8d,$21,$33,$31,$33,$30,$10,$10,$30
+                  
+                  
+                  
+                  

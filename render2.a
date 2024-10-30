@@ -5,15 +5,17 @@
 render
 
 !zone render
- 
+    .m_flipflop     = streamLength
+    .m_compWritePos = contentLength
+
     jsr set_location_to_data
     ldy #0                    ;y holds the readcolumn (reset to zero after eol is reached)
     
     ldx #0
     stx z_counter1            ;used for counting modules for display in a single character (used for bit shifting)
     stx z_counter2            ;z_counter2 temporarily holds the value of the 4 modules (the bit-shifted values)
-    stx contentLength         ;in this context, this should be read as "write position"
-    inc contentLength
+    stx .m_compWritePos         ;in this context, this should be read as "write position"
+    inc .m_compWritePos
     
     clc
     lda #<data
@@ -90,7 +92,7 @@ render
     and #1
     sta z_temp
     pla
-    and m_maskbit
+    and .m_maskbit
     bne +
     lda #0
     jmp ++
@@ -129,32 +131,33 @@ render
     sta (z_location2),y
     
     ; write module character index to memory for later saving to disk
-    txa
-    pha
     
-    lda m_xpos
+    lda .m_flipflop
     bit stream2module.m_one  ;are we in an even or odd column?
-    bne +                     ;bne means bit set -> odd column -> OR value to memory with already written high nybble
+    bne +                   ;bne means bit set -> odd column -> OR value to memory with already written high nybble
     
-    pla                       ;this needs to be written as the high nybble, shift it left
+    ldy .m_compWritePos
+    txa                       ;this needs to be written as the high nybble, shift it left
     asl
     asl
     asl
     asl
     jmp ++                    ;don't OR, to keep the lower nybble clear for the next index-value
     
-+   pla
++   txa
+    ldy .m_compWritePos
     ora (z_location3),y       ;OR because this is the lower nybble and we need to combine it with the upper
+    sec
     
-++  ldy contentLength
+++  sta (z_location3),y
+    bcc +
+    inc .m_compWritePos
     
-    sta (z_location3),y
-    inc contentLength
-    
-    ldx #0
++   ldx #0
     stx z_counter1
     stx z_counter2
     
+    inc .m_flipflop
     inc m_xpos
     ldy z_temp
     rts
@@ -179,3 +182,4 @@ render
 
 .modulechars  !byte 32,126,124,226,123,97,255,236,108,127,225,251,98,252,254,160
 .m_64         !byte 64
+.m_maskbit    !byte 2
