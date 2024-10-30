@@ -5,6 +5,7 @@
 ; x holds bank 1 address lb
 ; y holds bank 1 address hb
 init
+!zone init
     sta contentLength
     
     ; input address for petscii-to-ascii conversion
@@ -101,8 +102,17 @@ init
     jmp ++
 
 ; content too long for this    
-+   jsr k_primm
-    !pet "Content is too long.",0
++   ldx #0
+    ;sec
+-   lda .too_long,x
+    beq +
+    jsr $ffd2
+    inx
+    jmp -
+    
     
 ; done
++   sec
 ++  rts
+
+.too_long  !pet "content is too long.",0

@@ -12,9 +12,10 @@ m_lines_left    = $336     ;VERCK
 m_size          = $337
 m_screen_width  = $338
 
-*=$0801
+*=$c000
+;*=$0801
 ;*=$1c01
-    !basic start
+;    !basic start
 
 start
     ;set screenram 

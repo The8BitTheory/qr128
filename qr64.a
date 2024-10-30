@@ -15,7 +15,7 @@ z_counter2  = $0a     ;VERCK
 *= $C000
 
     jmp .generate
-    jmp save
+    ;jmp save
 
 
 .generate
@@ -75,7 +75,7 @@ m_ypos          !byte 0
 !source "patterns.a"        ; this writes timing, alignment, finder patterns etc.
 !source "stream2module.a"
 !source "render2.a"
-!source "fsave.a"
+;!source "fsave.a"
 
 
 data    !byte 0

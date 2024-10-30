@@ -3,21 +3,29 @@
 
 ;k_indfet  = $ff74
 ;k_indsta  = $ff77
-k_primm   = $ff7d
+;k_primm   = $ff7d
 
 
-z_location  = $fa     ;$fa-$fb for storing indexed addresses
-z_location2 = $fc     ;$fc-$fd for storing indexed addresses
-z_temp      = $fe
+z_location  = $fb     ;$fa-$fb for storing indexed addresses
+z_location2 = $fd     ;$fc-$fd for storing indexed addresses
+z_location3 = $16
+z_temp      = $03e4
 z_counter1  = $0a     ;ENDCHR
 z_counter2  = $0c     ;VERCK
 
 *= $1300
 
+    jmp .generate
+    ;jmp save
+
+
+.generate
+    ;cpx #0
+    ;beq +     ;x-reg not set, ie no maskbit provided. go with default value of 2 (set down below)
+    ;stx render.m_maskbit
+    
     jsr init
-;    jmp +
-;    jmp render
-    ;---end
+    bcs .too_long
     
     jsr p2a
     jsr bytes_to_stream
@@ -25,28 +33,31 @@ z_counter2  = $0c     ;VERCK
     jsr rs
     jsr write_patterns
     jsr stream_to_module
-
+    
     ;set screenram
     lda #$0
     sta z_location2
-    ;lda $03ab
-    lda #$4
+    lda $0a3b
     sta z_location2+1
     ;set linesize (use rsDivisorOffset because we don't need it any longer at this stage)
-    ldx #39
+    ldx $ee
     inx
     stx rsDivisorOffset
-
     jsr render
-        
-    ;lda size
-    ;ldx #<data
-    ;ldy #>data
+
+    lda render.m_compWritePos
+    ldx z_location3   ;these are set in render2.a
+    ldy z_location3+1
     
     rts
     
+    ;content too long
+.too_long
+    lda #0
+    rts
+    
 size            !byte 0   ;size of one axis-length of the final matrix
-contentLength   !byte 0
+contentLength   !byte 0   ;size of the provided URL, also used when writing the "compressed" matrix in render2.a
 eccLength       !byte 0   ;nr of ecc bytes to generate
 streamLength    !byte 0
 matrixSize      !byte 0,0 ;size of the matrix in modules (1 byte per module)
@@ -54,10 +65,9 @@ rsDivisorOffset !byte 0
 m_xpos          !byte 0
 m_ypos          !byte 0
 
-
 !source "common.a"
 !source "init.a"
-!source "p2a.a"             ; reads petscii bytes from z_location and writes ascii to z_location2 (which is matrix-start)
+!source "p2a.a"           ; reads petscii bytes from z_location and writes ascii to z_location2 (which is matrix-start)
 !source "bytes2stream.a"    ; reads ascii from z_location2 and writes into datastream at z_location (=data+matrix_size)
                             ; z_counter1 holds the right offset for rs.a to continue using it.
 !source "masks.a"           ; this clears the matrix memory area and calculates all the xor-masks
@@ -66,6 +76,7 @@ m_ypos          !byte 0
 !source "patterns.a"        ; this writes timing, alignment, finder patterns etc.
 !source "stream2module.a"
 !source "render2.a"
+;!source "fsave.a"
 
 
 data    !byte 0

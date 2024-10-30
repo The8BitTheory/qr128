@@ -71,6 +71,9 @@ render
     jsr .write_character
     jmp .read_4_modules
     
+.end
+    rts
+    
     
 .next_line
     jsr .write_character
@@ -163,9 +166,6 @@ render
     rts
     
 
-.end
-    rts
-    
     
 .inc_line2
     lda #0

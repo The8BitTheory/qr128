@@ -5,7 +5,7 @@
 ; x holds bank 1 address lb
 ; y holds bank 1 address hb
 init
-!zone init64
+!zone init
     sta z_temp  ;this holds the variable name
   
     ;first, find out where variable is stored  
