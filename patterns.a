@@ -1,4 +1,4 @@
-; this writes the
+﻿; this writes the
 ; - timing patterns (horizontal and vertical).
 ;   starting at row and column 6 (zero-based), starting with dark
 ; - finder patterns (top left, top right, bottom left)
