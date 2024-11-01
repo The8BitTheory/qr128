@@ -1,4 +1,4 @@
-; this renders 2x2 modules in a single petscii character
+﻿; this renders 2x2 modules in a single petscii character
 ; this allows for the full size of the max supported size (version 5 with 37x37 modules) on all machines
 ; including the vic 20
 
@@ -72,6 +72,7 @@ render
     jmp .read_4_modules
     
 .end
+    jsr .write_character
     rts
     
     
