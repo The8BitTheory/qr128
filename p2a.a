@@ -2,71 +2,33 @@
 ; takes the result of pointer(x) as input (i). regx=loc lb, regy=loc hb, acc=length
 ; bank 1, peek(i) gives length of string, peek(i+1)+peek(i+2)*256 gives address of string
 
-!to "p2a.bin",cbm
+; this routine is taken from the GoDot QR-Code Generator Module by Arndt Dettke
 
-;!source <cbm/c128/kernal.a>
 
 k_indfet = $ff74
-;k_indsta = $ff77
 
 
-;location = $fa ;$FA-$FB. location of the string
-;length = $fc   ;$FC. length of the string
-
-
-;*=$1300
 p2a
-  ; store parameters
-;  sta length
-;  stx location
-;  sty location+1
-
-
-    ; output address for petscii-to-ascii conversion
-    ;ldx #<$0b00
-    ;stx z_location2
-    ;ldx #>$0b00
-    ;stx z_location2+1
   
+p2a
+
   ldy #0
-  
-.loop
+.loop 
   lda #z_location
   ldx #1
   jsr k_indfet
-
-  ; IF A>=193 AND A<=218 THEN A=A-128
-  ; < 193
-  cmp #193
-  bcc .comp2
   
-  ; > 218
-  cmp #218
-  beq .comp2  
-  
-  ; then a=a-128
-  sec
-  sbc #128
-  
-  jmp .write
-  
-; IF A>=65 AND A<=90 THEN A=A+32
-; a < 65
-.comp2
-  cmp #65
-  bcc .write
-  
-; > 91
-  cmp #91
-  beq .write
-  
-  clc
-  adc #32
-  
-.write
-  sta (z_location2),y
+  bmi +
+  cmp #$40
+  bcc ++
+  ora #$20
++ and #$3f
+  ora #$40
+++  sta (z_location2),y
   iny
   cpy contentLength
   bne .loop
-  
   rts
+  
+  
+  
