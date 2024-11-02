@@ -1,33 +1,117 @@
+target = 'c128'
 
-!to "qr.bin.prg",cbm
-
-;k_indfet  = $ff74
-;k_indsta  = $ff77
-;k_primm   = $ff7d
-
-
-z_location  = $fb     ;$fa-$fb for storing indexed addresses
-z_location2 = $fd     ;$fc-$fd for storing indexed addresses
-z_location3 = $16
-z_temp      = $03e4
-z_counter1  = $0a     ;ENDCHR
-z_counter2  = $0c     ;VERCK
-
+!if target = 'c128' {
 *= $1300
+  !to "qr.bin.prg",cbm
+  
+  create_runtime = 1
+  nr_patterns = 3
+  max_version = 5
+  find_var    = 0
+  basic_aio_starter = 0
+
+  z_location  = $fb     ;$fa-$fb for storing indexed addresses
+  z_location2 = $fd     ;$fc-$fd for storing indexed addresses
+  z_location3 = $18     ;used for m_divisors in rs.a
+                        ;also used for storing compressed matrix for runtime in render2.a
+  z_temp      = $03e4
+  z_counter1  = $0a     ;ENDCHR
+  z_counter2  = $0c     ;VERCK
+
+} else if target = 'vic20' {
+*= $1001
+  !to "qr20.bin.prg",cbm
+
+  create_runtime = 0
+  nr_patterns = 1
+  max_version = 4
+  find_var    = 1
+  basic_aio_starter = 1
+  
+  z_location  = $fb     ;$fa-$fb for storing indexed addresses
+  z_location2 = $fd     ;$fc-$fd for storing indexed addresses
+  z_location3 = $16     ; not needed on vic-20
+  z_temp      = $02
+  z_counter1  = $08     ;ENDCHR
+  z_counter2  = $0a     ;VERCK
+  
+} else if target = 'x16' {
+*= $a000
+  !to "qrx16.bin",plain
+  
+  create_runtime = 1
+  nr_patterns = 3
+  max_version = 5
+  find_var    = 0
+  basic_aio_starter = 0
+
+  z_location  = $22     ;$fb-$fc for storing indexed addresses
+  z_location2 = $24     ;$fd-$fe for storing indexed addresses
+  z_location3 = $26     ;$14-$15 LINNUM. we use this to write the "compressed" matrix
+  z_temp      = $28
+  z_counter1  = $29     ;ENDCHR
+  z_counter2  = $30     ;VERCK
+  m_divisors =  $31    ;$31-$32
+
+}
+
+!if basic_aio_starter {
+    ;75 characters fit into RAM
+    
+    !byte $31,$10,$05,$00
+    !byte $54,$24,$b2,$22
+    !pet "https://github.com/the8bittheory/qr128"
+    ;!pet "forum64.de"
+    !byte $22,$00
+    
+    ;15 poke,poke,print
+    !byte $54,$10,$0f,$00,$97
+    !pet "36879,1"
+    !byte $3a,$97
+    !pet "646,1"
+    !byte $3a,$99,$22,$93,$22,$3a,$97,$32,$31,$34,$2c,$31,$36,$3a,$99,$00
+    ;poke 21
+    
+    ;20 poke
+    !byte $6e,$10,$14,$00,$97,$37,$38,$30,$2c,$c6,$28,$22,$54,$22,$29
+    !byte $3a
+    !byte $99,$54,$24,$3a
+    
+    ;!basic 40,start
+    ;!byte $83,$10,$28,$00,
+    !byte $9e
+    !byte '0' + start % 10000 / 1000
+    !byte '0' + start % 1000 / 100
+    !byte '0' + start % 100 / 10
+    !byte '0' + start % 10
+    !byte $00
+    
+    ;input t$
+    !byte $98,$10,$3c,$00,$85,$54,$24,$3a,$89,$31,$35,$00
+    
+    !byte $00,$00
+}
+
+
 
     ;jmp .generate
     ;jmp save
 
 
-.generate
     ;cpx #0
     ;beq +     ;x-reg not set, ie no maskbit provided. go with default value of 2 (set down below)
     ;stx render.m_maskbit
-    
+start
+!if find_var {
+    jsr findvar
+}
     jsr init
     bcs .too_long
+    bcc +
     
-    jsr p2a
+m_maskbit    !byte 2
+    
++   jsr p2a
     jsr bytes_to_stream
     jsr calc_xor_masks
     jsr rs
@@ -55,17 +139,22 @@ z_counter2  = $0c     ;VERCK
 .too_long
     lda #0
     rts
-    
+         
 size            !byte 0   ;size of one axis-length of the final matrix
 contentLength   !byte 0   ;size of the provided URL, also used when writing the "compressed" matrix in render2.a
-eccLength       !byte 0   ;nr of ecc bytes to generate
-streamLength    !byte 0
+eccLength       !byte 0   ;nr of ecc bytes to generate  
+streamLength    !byte 0 
 matrixSize      !byte 0,0 ;size of the matrix in modules (1 byte per module)
 rsDivisorOffset !byte 0
 m_xpos          !byte 0
 m_ypos          !byte 0
 
 !source "common.a"
+
+!if find_var {
+!source "var.a"
+}
+
 !source "init.a"
 !source "p2a.a"           ; reads petscii bytes from z_location and writes ascii to z_location2 (which is matrix-start)
 !source "bytes2stream.a"    ; reads ascii from z_location2 and writes into datastream at z_location (=data+matrix_size)

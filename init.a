@@ -1,9 +1,10 @@
-
-
 ; this calculates all sizes according to the length of the content
 ; accumulator holds length
 ; x holds bank 1 address lb
 ; y holds bank 1 address hb
+
+k_primm   = $ff7d
+
 init
 !zone init
     sta contentLength
@@ -52,7 +53,8 @@ init
     lda #7
     sta rsDivisorOffset
     jmp ++
-    
+
+!if max_version > 2 {    
 +   cmp #54
     bcs +
     lda #29
@@ -68,7 +70,9 @@ init
     lda #17
     sta rsDivisorOffset
     jmp ++
-    
+}
+
+!if max_version > 3 {
 +   cmp #79
     bcs +
     lda #33
@@ -84,7 +88,9 @@ init
     lda #32
     sta rsDivisorOffset
     jmp ++
+}
     
+!if max_version > 4 {
 +   cmp #107
     bcs +
     lda #37
@@ -100,19 +106,26 @@ init
     lda #52
     sta rsDivisorOffset
     jmp ++
+}
 
-; content too long for this    
+; content too long for this
+!if target = 'c128' {
++   jsr k_primm
+
+} else {
+
 +   ldx #0
-    ;sec
 -   lda .too_long,x
-    beq +
+    beq .end
     jsr $ffd2
     inx
     jmp -
-    
-    
+}
+.too_long  !pet "content is too long.",0
+
 ; done
-+   sec
+.end
+    sec
 ++  rts
 
-.too_long  !pet "content is too long.",0
+

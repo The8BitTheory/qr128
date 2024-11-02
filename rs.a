@@ -27,15 +27,13 @@
 ;rsmul1 =       $03e7   ; rs-multiply temp var 1
 ;rsmul2 =       $03e9   ; rs-multiply temp var 2
 
-m_divisors =    $0d    ;$0d-$0e
+;m_divisors =      $0d;-$0e
+;m_divisors =    z_location3
 ;loopc =        $03ed   ; loop counter in rsremainder for the loop that contains rsmultiply
 
 ;rsmulx =       $03ee   ; store and recover x-reg here when calling rsmultiply
 ;rsmuly =       $03ef   ; store and recover y-reg here when calling rsmultiply
 
-
-
-;*= $1300
 rs
     jsr set_location_datastream
     
@@ -62,16 +60,6 @@ rs
 -   sta (z_location2),y
     dey
     bpl -
-    
-    ; set divisor address according to version
-    clc
-    lda #<rsdivisors
-    adc rsDivisorOffset
-    sta m_divisors
-    
-    lda #>rsdivisors
-    adc #0
-    sta m_divisors+1
     
     ;ldy #datastream_end-datastream
     sec
@@ -111,8 +99,9 @@ rsremainder:
     stx .loopc
     
     ldy #0
+    ldx rsDivisorOffset
     
--   lda (m_divisors),y
+-   lda rsdivisors,x
     sta .divisor
 
     jsr rsmultiply
@@ -120,8 +109,9 @@ rsremainder:
     eor (z_location2),y
     sta (z_location2),y
     
+    inx
     iny
-    dex
+    dec .loopc
     bne -
     
     dec z_counter2
@@ -226,10 +216,12 @@ rsdivisors
     !byte $79,$79,$A5,$AE
 
     ; version 5
+!if max_version > 4 {
     ;!byte 246,51,183,4,136,98,199,152,77,56,206,24,145,40,209,117
     ;!byte 233,42,135,68,70,144,146,77,43,94
     !byte $F6,$33,$B7,$4,$88,$62,$C7,$98,$4D,$38,$CE,$18,$91,$28,$D1,$75
     !byte $E9,$2A,$87,$44,$46,$90,$92,$4D,$2B,$5E
+}
     
 .divisor     !byte 0   ; current divisor
 .rsfactor    !byte 0
@@ -242,3 +234,5 @@ rsdivisors
 
 .rsmulx      !byte 0   ; store and recover x-reg here when calling rsmultiply
 .rsmuly      !byte 0   ; store and recover y-reg here when calling rsmultiply
+;.rsmulx  = $03e5
+;.rsmuly  = $03e6

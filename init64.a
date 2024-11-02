@@ -6,38 +6,7 @@
 ; y holds bank 1 address hb
 init
 !zone init
-    sta z_temp  ;this holds the variable name
-  
-    ;first, find out where variable is stored  
-    ldx $2d
-    stx z_location
-    ldy $2e
-    sty z_location+1
-    
-    
-    
-    ldy #0
--   lda (z_location),y
-    cmp z_temp          ;variable found
-    beq +
-    
-    tya
-    clc
-    adc #7
-    tay
-    jmp -
-    
-+   iny
-    iny
-    lda (z_location),y
-    sta contentLength
-    
-    iny
-    lda (z_location),y
-    tax
-    iny
-    lda (z_location),y
-    tay
+
 
     ; input address for petscii-to-ascii conversion    
     stx z_location
@@ -58,6 +27,7 @@ init
     sta data+256,x
     sta data+512,x
     sta data+768,x
+;    sta data+1024,x
     inx
     bne -
     
