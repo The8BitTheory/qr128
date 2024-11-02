@@ -4,11 +4,10 @@
 z_location2     = $fd     ;$fd-$fe    screen-ram. indirect addressing via y
 
 z_readoff       = $fb
-z_writeoff      = $fc
-m_temp          = $310
-m_lines_left    = $311
-m_size          = $312
-m_screen_width  = $313
+;z_writeoff      = $fc
+m_lines_left    = $18
+m_size          = $19
+m_screen_width  = $20
 
 *=$1300
 ;*=$0801
@@ -28,9 +27,7 @@ m_screen_width  = $313
     ;inx
     sta m_screen_width
     
-    
     ldy #0
-    sty z_writeoff          ;write offset. writes a line, reset to zero, increase z_location2 by size
     ldx #0
     
     lda .data,x
@@ -46,7 +43,7 @@ m_screen_width  = $313
 -   ldx z_readoff
     lda .data,x             ;z_location points to the datafile (containing screen codes, each byte is a 2x2 petscii character)
 
-    sta m_temp
+    pha
     ;get higher nybble
     lsr
     lsr
@@ -54,28 +51,28 @@ m_screen_width  = $313
     lsr
     
     jsr render_char
+    pla
     bcs .end
 
-    lda m_temp
     and #$F
 
     jsr render_char
     
     inc z_readoff
     
-    ldx #1
-    bne -
-;    jmp -  ;replacing absolute with relative instruction
+;    ldx #1
+;    bne -
+    jmp -  ;replacing absolute with relative instruction
     
     
 .end
+    
     rts
 
 
 render_char
     tax
     lda .modulechars,x
-    ldy z_writeoff
     sta (z_location2),y
     iny
     cpy m_size
@@ -93,9 +90,7 @@ render_char
     
 +   ldy #0
     
-++  sty z_writeoff
-    
-    clc
+++  clc
     rts
     
 .done
