@@ -141,6 +141,7 @@ rsmultiply:
     inc .rsmul1+1
     
 +   lda .rsmulres     ; R in the Basic implementation
+
     and #128
     cmp #128            ; C=INT(R/128)
     
@@ -226,13 +227,14 @@ rsdivisors
 .divisor     !byte 0   ; current divisor
 .rsfactor    !byte 0
 
-.rsmulres    !byte 0; result of rs-multiply
-.rsmul1      !byte 0,0   ; rs-multiply temp var 1
-.rsmul2      !byte 0,0   ; rs-multiply temp var 2
+;.rsmulres = $19
+.rsmulres    !byte 0; result of rs-multiply -5x
+;.rsmul1= $20
+.rsmul1      !byte 0,0   ; rs-multiply temp var  -5xx
+;.rsmul2= $21
+.rsmul2      !byte 0,0   ; rs-multiply temp var  - 5xx
 
 .loopc       !byte 0   ; loop counter in rsremainder for the loop that contains rsmultiply
 
 .rsmulx      !byte 0   ; store and recover x-reg here when calling rsmultiply
 .rsmuly      !byte 0   ; store and recover y-reg here when calling rsmultiply
-;.rsmulx  = $03e5
-;.rsmuly  = $03e6

@@ -12,9 +12,9 @@ target = 'c128'
 
   z_location  = $fb     ;$fa-$fb for storing indexed addresses
   z_location2 = $fd     ;$fc-$fd for storing indexed addresses
-  z_location3 = $18     ;used for m_divisors in rs.a
+  z_location3 = $16     ;used for m_divisors in rs.a
                         ;also used for storing compressed matrix for runtime in render2.a
-  z_temp      = $20
+  z_temp      = $18
   z_counter1  = $0a     ;ENDCHR
   z_counter2  = $0c     ;VERCK
 
