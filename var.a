@@ -1,0 +1,39 @@
+; this routine finds the memory address of the address to use as input
+; this is only required on systems that don't provide a Basic POINTER function of some kind.
+
+findvar
+
+!zone findvar
+
+    sta z_temp  ;this holds the variable name
+  
+    ;first, find out where variable is stored  
+    ldx $2d
+    stx z_location
+    ldy $2e
+    sty z_location+1
+    
+    ldy #0
+-   lda (z_location),y
+    cmp z_temp          ;variable found
+    beq +
+    
+    tya
+    clc
+    adc #7
+    tay
+    jmp -
+    
++   iny
+    iny
+    lda (z_location),y
+    sta contentLength
+    
+    iny
+    lda (z_location),y
+    tax
+    iny
+    lda (z_location),y
+    tay
+    
+    rts

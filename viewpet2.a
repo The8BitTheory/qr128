@@ -4,12 +4,11 @@
 z_location2     = $fd     ;$fd-$fe    screen-ram. indirect addressing via y
 
 z_readoff       = $fb
-;z_writeoff      = $fc
 m_lines_left    = $18
 m_size          = $19
 m_screen_width  = $20
 
-*=$1300
+*=$c000
 ;*=$0801
 ;*=$1c01
 ;    !basic start
@@ -30,13 +29,10 @@ m_screen_width  = $20
     ldy #0
     ldx #0
     
-    lda .data,x
+    lda .data,x             ;load size of the qr-code data
     inx
     stx z_readoff           ;read offset. continuous until end of file
     
-    clc
-    adc #1
-    lsr
     sta m_lines_left
     sta m_size
         
@@ -60,9 +56,8 @@ m_screen_width  = $20
     
     inc z_readoff
     
-;    ldx #1
-;    bne -
-    jmp -  ;replacing absolute with relative instruction
+    bne -   ;zero flag should be clear always because z_readoff never goes to rolling over
+;    jmp -  ;replacing absolute with relative instruction
     
     
 .end
@@ -102,21 +97,22 @@ render_char
 ;                         0   1   2   3   4   5   6   7   8   9   A   B   C   D   E   F
 .modulechars      !byte $20,$7E,$7C,$E2,$7B,$61,$FF,$EC,$6C,$7F,$E1,$FB,$62,$FC,$FE,$A0
 
-.data             !byte $1d
-                  !byte $73,$35,$d6,$f0,$50,$57,$33,$55
-                  !byte $f5,$50,$7b,$3f,$70,$5f,$55
-                  !byte $53,$15,$7b,$00,$b1,$05,$31,$53
-                  !byte $33,$15,$d5,$91,$11,$33,$31,$39
-                  !byte $a1,$f5,$ab,$c8,$ff,$1a,$5d,$bc
-                  !byte $18,$28,$22,$7d,$3f,$11,$ff,$4b
-                  !byte $22,$7a,$4e,$4f,$08,$54,$a2,$99
-                  !byte $87,$f6,$a6,$f1,$01,$01,$a1,$10
-                  !byte $ad,$1c,$3d,$0c,$53,$c8,$b1,$38
-                  !byte $22,$24,$47,$01,$30,$21,$52,$78
-                  !byte $c0,$73,$f6,$47,$33,$5e,$c7,$f3
-                  !byte $95,$15,$05,$5f,$55,$84,$af,$4a
-                  !byte $f3,$f4,$55,$31,$5f,$68,$a6,$46
-                  !byte $8d,$21,$33,$31,$33,$30,$10,$10,$30
+.data             !byte $0F
+                  !byte $73, $35, $D6, $F0, $50, $57, $33, $55
+                  !byte $F5, $50, $7B, $3F, $70, $5F, $55, $53
+                  !byte $15, $7B, $00, $B1, $05, $31, $53, $33
+                  !byte $15, $D5, $91, $11, $33, $31, $39, $A1
+                  !byte $F5, $AB, $C8, $FF, $1A, $5D, $BC, $18
+                  !byte $28, $22, $7D, $3F, $11, $FF, $4B, $22
+                  !byte $7A, $4E, $4F, $08, $54, $A2, $99, $87
+                  !byte $F6, $A6, $F1, $01, $01, $A1, $10, $AD
+                  !byte $1C, $3D, $0C, $53, $C8, $B1, $38, $22
+                  !byte $24, $47, $01, $30, $21, $52, $78, $C0
+                  !byte $73, $F6, $47, $33, $5E, $C7, $F3, $95
+                  !byte $15, $05, $5F, $55, $84, $AF, $4A, $F3
+                  !byte $F4, $55, $31, $5F, $68, $A6, $46, $8D
+                  !byte $21, $33, $31, $33, $30, $10, $10, $30
+                  !byte $10
                   
                   
                   

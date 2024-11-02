@@ -14,7 +14,7 @@ target = 'c128'
   z_location2 = $fd     ;$fc-$fd for storing indexed addresses
   z_location3 = $18     ;used for m_divisors in rs.a
                         ;also used for storing compressed matrix for runtime in render2.a
-  z_temp      = $03e4
+  z_temp      = $20
   z_counter1  = $0a     ;ENDCHR
   z_counter2  = $0c     ;VERCK
 
@@ -118,6 +118,15 @@ m_maskbit    !byte 2
     jsr write_patterns
     jsr stream_to_module
     
+!if target = 'x16' {
+    lda #<*+4096
+    sta z_location2
+    lda #>*+4096
+    sta z_location2+1
+    
+    ldx #$80
+    stx rsDivisorOffset
+} else {
     ;set screenram
     lda #$0
     sta z_location2
@@ -127,8 +136,9 @@ m_maskbit    !byte 2
     ldx $ee
     inx
     stx rsDivisorOffset
+}    
     jsr render
-
+    
     lda render.m_compWritePos
     ldx z_location3   ;these are set in render2.a
     ldy z_location3+1
