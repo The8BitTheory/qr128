@@ -3,6 +3,8 @@
 The code is still a mess.
 The Basic implementations are those with "driver" in the name (qrdriver20, qrdriverx16, qrdriverm65, ...)
 
+Ready-to-use disk-images are in the sub-folders named like Computers.
+
 For the Assembly version, take qr.a and all the files that are referred as !source references inside.
 
 ## Available versions
