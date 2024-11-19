@@ -1,4 +1,4 @@
- ;view qrcode file
+;view qrcode file
 
 
 z_location2     = $fd     ;$fd-$fe    screen-ram. indirect addressing via y
@@ -8,9 +8,7 @@ m_lines_left    = $18
 m_size          = $19
 m_screen_width  = $20
 
-*=$c000
-;*=$0801
-;*=$1c01
+*=$0ac6
 ;    !basic start
 
     ;set screenram 

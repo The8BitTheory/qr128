@@ -38,14 +38,14 @@ calc_xor_masks
     stx m_ypos
 
   ; mask 111 (bit 4): x%3=0
--   lda m_xpos
-    jsr .modulo_3_is_zero
-    bne +       ; if not zero don't write mask-bit to module
-    lda #%00010000
-    jsr .write_to_mask
+;-   lda m_xpos
+;    jsr .modulo_3_is_zero
+;    bne +       ; if not zero don't write mask-bit to module
+;    lda #%00010000
+;    jsr .write_to_mask
     
   ; mask 110 (bit 3): (y+x)%3=0
-+   clc
+-   clc
     lda m_xpos
     adc m_ypos
     jsr .modulo_3_is_zero
@@ -140,8 +140,8 @@ calc_xor_masks
     jsr .set_pattern_110
     jsr .write_format_modules_hor
 
-    jsr .set_pattern_111
-    jsr .write_format_modules_hor
+    ;jsr .set_pattern_111
+    ;jsr .write_format_modules_hor
     
     jsr .clean_format_modules_vert
 
@@ -154,8 +154,8 @@ calc_xor_masks
     jsr .set_pattern_110
     jsr .write_format_modules_vert
     
-    jsr .set_pattern_111
-    jsr .write_format_modules_vert
+    ;jsr .set_pattern_111
+    ;jsr .write_format_modules_vert
 
     rts
 
@@ -195,17 +195,17 @@ calc_xor_masks
     
     rts
 
-.set_pattern_111
-    lda .pattern111
-    sta z_location2
-    lda .pattern111+1
-    sta z_location2+1
-    lda #64
-    sta z_temp
-    lda .bit4
-    sta .m_bit
+;.set_pattern_111
+;    lda .pattern111
+;    sta z_location2
+;    lda .pattern111+1
+;    sta z_location2+1
+;    lda #64
+;    sta z_temp
+;    lda .bit4
+;    sta .m_bit
     
-    rts
+;    rts
     
     
 .write_format_modules_hor
@@ -409,8 +409,8 @@ calc_xor_masks
 .pattern100 !byte %01110010, %11110011
 .pattern101 !byte %01110111, %11000100 
 .pattern110 !byte %01111000, %10011101
-.pattern111 !byte %01111101, %10101010
+;.pattern111 !byte %01111101, %10101010
 .bit1       !byte %01000010
 .bit2       !byte %01000100
 .bit3       !byte %01001000
-.bit4       !byte %01010000
+;.bit4       !byte %01010000

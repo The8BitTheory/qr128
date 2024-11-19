@@ -7,42 +7,14 @@ z_temp      = $02
 z_counter1  = $08     ;ENDCHR
 z_counter2  = $0a     ;VERCK
 
+create_runtime = 0
+target = 'vic20'
+nr_patterns = 1
+max_version = 4
+
 *= $1001
 
-    ;75 characters fit into RAM
-    
-    !byte $31,$10,$05,$00
-    !byte $54,$24,$b2,$22
-    !pet "https://github.com/the8bittheory/qr128"
-    ;!pet "forum64.de"
-    !byte $22,$00
-    
-    ;15 poke,poke,print
-    !byte $54,$10,$0f,$00,$97
-    !pet "36879,1"
-    !byte $3a,$97
-    !pet "646,1"
-    !byte $3a,$99,$22,$93,$22,$3a,$97,$32,$31,$34,$2c,$31,$36,$3a,$99,$00
-    ;poke 21
-    
-    ;20 poke
-    !byte $6e,$10,$14,$00,$97,$37,$38,$30,$2c,$c6,$28,$22,$54,$22,$29
-    !byte $3a
-    !byte $99,$54,$24,$3a
-    
-    ;!basic 40,start
-    ;!byte $83,$10,$28,$00,
-    !byte $9e
-    !byte '0' + start % 10000 / 1000
-    !byte '0' + start % 1000 / 100
-    !byte '0' + start % 100 / 10
-    !byte '0' + start % 10
-    !byte $00
-    
-    ;input t$
-    !byte $98,$10,$3c,$00,$85,$54,$24,$3a,$89,$31,$35,$00
-    
-    !byte $00,$00
+
 
 start
     jsr init
@@ -86,7 +58,7 @@ m_ypos          !byte 0
 
 !source "common.a"
 !source "init64.a"
-!source "p2asb.a"           ; reads petscii bytes from z_location and writes ascii to z_location2 (which is matrix-start)
+!source "p2a.a"           ; reads petscii bytes from z_location and writes ascii to z_location2 (which is matrix-start)
 !source "bytes2stream.a"    ; reads ascii from z_location2 and writes into datastream at z_location (=data+matrix_size)
                             ; z_counter1 holds the right offset for rs.a to continue using it.
 !source "masks.a"           ; this clears the matrix memory area and calculates all the xor-masks
