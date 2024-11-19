@@ -1,6 +1,6 @@
-target = 'c128'
+target = "c128"
 
-!if target = 'c128' {
+!if target = "c128" {
 *= $1300
   !to "qr.bin.prg",cbm
   
@@ -18,7 +18,7 @@ target = 'c128'
   z_counter1  = $0a     ;ENDCHR
   z_counter2  = $0c     ;VERCK
 
-} else if target = 'vic20' {
+} else if target = "vic20" {
 *= $1001
   !to "qr20.bin.prg",cbm
 
@@ -35,7 +35,7 @@ target = 'c128'
   z_counter1  = $08     ;ENDCHR
   z_counter2  = $0a     ;VERCK
   
-} else if target = 'x16' {
+} else if target = "x16" {
 *= $a000
   !to "qrx16.bin",plain
   
@@ -118,7 +118,7 @@ m_maskbit    !byte 2
     jsr write_patterns
     jsr stream_to_module
     
-!if target = 'x16' {
+!if target = "x16" {
     lda #<*+4096
     sta z_location2
     lda #>*+4096
