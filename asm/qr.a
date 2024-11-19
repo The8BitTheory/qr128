@@ -12,12 +12,29 @@ target = "c128"
 
   z_location  = $fb     ;$fa-$fb for storing indexed addresses
   z_location2 = $fd     ;$fc-$fd for storing indexed addresses
-  z_location3 = $16     ;used for m_divisors in rs.a
+  z_location3 = $24     ;used for m_divisors in rs.a
                         ;also used for storing compressed matrix for runtime in render2.a
-  z_temp      = $18
+  z_temp      = $28
   z_counter1  = $0a     ;ENDCHR
-  z_counter2  = $0c     ;VERCK
+  z_counter2  = $0d     ;CHARAC or INTEGR
 
+} else if target = "c64" {
+*= $C000
+  !to "qr64.bin.prg",cbm
+
+  create_runtime = 1
+  nr_patterns = 3
+  max_version = 4
+  find_var    = 1
+  basic_aio_starter = 0
+  
+  z_location  = $fb     ;$fa-$fb for storing indexed addresses
+  z_location2 = $fd     ;$fc-$fd for storing indexed addresses
+  z_location3 = $16     ; not needed on vic-20
+  z_temp      = $02
+  z_counter1  = $08     ;ENDCHR
+  z_counter2  = $0a     ;VERCK
+  
 } else if target = "vic20" {
 *= $1001
   !to "qr20.bin.prg",cbm
@@ -52,6 +69,26 @@ target = "c128"
   z_counter1  = $29     ;ENDCHR
   z_counter2  = $30     ;VERCK
   m_divisors =  $31    ;$31-$32
+
+} else if target = "mega65" {
+
+*= $a000
+  !to "qrm65.bin",cbm
+  
+  create_runtime = 1
+  nr_patterns = 3
+  max_version = 5
+  find_var    = 0
+  basic_aio_starter = 0
+
+  z_location  = $fb     ;$fa-$fb for storing indexed addresses
+  z_location2 = $fd     ;$fc-$fd for storing indexed addresses
+  z_location3 = $19     ;used for m_divisors in rs.a
+                        ;also used for storing compressed matrix for runtime in render2.a
+  z_temp      = $18
+  z_counter1  = $0a     ;ENDCHR
+  z_counter2  = $0c     ;VERCK
+
 
 }
 
@@ -126,6 +163,17 @@ m_maskbit    !byte 2
     
     ldx #$80
     stx rsDivisorOffset
+    
+} else if target = "mega65" {
+  
+    lda #0
+    sta z_location2
+    lda $1125
+    sta z_location2+1
+    
+    ldx #80
+    stx rsDivisorOffset
+    
 } else {
     ;set screenram
     lda #$0
@@ -139,9 +187,17 @@ m_maskbit    !byte 2
 }    
     jsr render
     
+!if target = "x16" {
+    lda size
+    ldx z_location3   ;these are set in render2.a
+    ldy z_location3+1
+} else if target = "vic20" {
+    ; do nothing
+} else {
     lda render.m_compWritePos
     ldx z_location3   ;these are set in render2.a
     ldy z_location3+1
+}
     
     rts
     
@@ -174,7 +230,11 @@ m_ypos          !byte 0
                             ; z_location2(=z_location + z_counter1)
 !source "patterns.a"        ; this writes timing, alignment, finder patterns etc.
 !source "stream2module.a"
+!if target="x16" {
 !source "render2.a"
+} else {
+!source "render2.a"
+}
 ;!source "fsave.a"
 
 
