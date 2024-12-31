@@ -3,7 +3,7 @@
 ; x holds bank 1 address lb
 ; y holds bank 1 address hb
 
-k_primm   = $ff7d
+k_primm   = $ff7d; works for c128 and mega65
 
 init
 !zone init
@@ -109,7 +109,7 @@ init
 }
 
 ; content too long for this
-!if target = "c128" {
+!if knows_primm {
 +   jsr k_primm
 
 } else {

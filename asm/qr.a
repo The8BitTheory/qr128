@@ -1,4 +1,4 @@
-target = "c128"
+target = "mega65"
 
 !if target = "c128" {
 *= $1300
@@ -8,6 +8,7 @@ target = "c128"
   nr_patterns = 3
   max_version = 5
   find_var    = 0
+  knows_primm = 1
   basic_aio_starter = 0
 
   z_location  = $fb     ;$fa-$fb for storing indexed addresses
@@ -26,6 +27,7 @@ target = "c128"
   nr_patterns = 3
   max_version = 4
   find_var    = 1
+  knows_primm = 0
   basic_aio_starter = 0
   
   z_location  = $fb     ;$fa-$fb for storing indexed addresses
@@ -43,6 +45,7 @@ target = "c128"
   nr_patterns = 1
   max_version = 4
   find_var    = 1
+  knows_primm = 0
   basic_aio_starter = 1
   
   z_location  = $fb     ;$fa-$fb for storing indexed addresses
@@ -60,6 +63,7 @@ target = "c128"
   nr_patterns = 3
   max_version = 5
   find_var    = 0
+  knows_primm = 0
   basic_aio_starter = 0
 
   z_location  = $22     ;$fb-$fc for storing indexed addresses
@@ -72,22 +76,26 @@ target = "c128"
 
 } else if target = "mega65" {
 
-*= $a000
+*= $a7ff
+  ; 196-203 ($c4-$cb) are rs232 input- and output buffer start and end addresses
+  ; these are free to use, as long as rs232 is not used
+
   !to "qrm65.bin",cbm
   
   create_runtime = 1
   nr_patterns = 3
   max_version = 5
   find_var    = 0
+  knows_primm = 1
   basic_aio_starter = 0
 
   z_location  = $fb     ;$fa-$fb for storing indexed addresses
   z_location2 = $fd     ;$fc-$fd for storing indexed addresses
-  z_location3 = $19     ;used for m_divisors in rs.a
+  z_location3 = $c4     ;used for m_divisors in rs.a
                         ;also used for storing compressed matrix for runtime in render2.a
-  z_temp      = $18
-  z_counter1  = $0a     ;ENDCHR
-  z_counter2  = $0c     ;VERCK
+  z_temp      = $c6
+  z_counter1  = $c8     ;ENDCHR
+  z_counter2  = $ca     ;VERCK
 
 
 }
@@ -218,7 +226,7 @@ m_ypos          !byte 0
 !source "common.a"
 
 !if find_var {
-!source "var.a"
+  !source "var.a"
 }
 
 !source "init.a"
@@ -231,9 +239,9 @@ m_ypos          !byte 0
 !source "patterns.a"        ; this writes timing, alignment, finder patterns etc.
 !source "stream2module.a"
 !if target="x16" {
-!source "render2.a"
+  !source "render2.a"
 } else {
-!source "render2.a"
+  !source "render2.a"
 }
 ;!source "fsave.a"
 
