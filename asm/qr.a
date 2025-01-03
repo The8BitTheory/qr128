@@ -82,7 +82,7 @@ target = "mega65"
 
   !to "qrm65.bin",cbm
   
-  create_runtime = 1
+  create_runtime = 0
   nr_patterns = 3
   max_version = 5
   find_var    = 0
@@ -174,9 +174,9 @@ m_maskbit    !byte 2
     
 } else if target = "mega65" {
   
-    lda #0
+    lda $d060
     sta z_location2
-    lda $1125
+    lda $d061
     sta z_location2+1
     
     ldx #80
@@ -192,7 +192,7 @@ m_maskbit    !byte 2
     ldx $ee
     inx
     stx rsDivisorOffset
-}    
+}
     jsr render
     
 !if target = "x16" {
@@ -202,6 +202,8 @@ m_maskbit    !byte 2
 } else if target = "vic20" {
     ; do nothing
 } else {
+    ; z_location3 points to the runtime data
+    ; m_compWritePos holds the length of the runtime
     lda render.m_compWritePos
     ldx z_location3   ;these are set in render2.a
     ldy z_location3+1

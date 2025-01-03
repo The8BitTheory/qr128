@@ -18,6 +18,7 @@ render
     inc .m_compWritePos
     
 !if create_runtime {
+; z_location3 is the pointer to the runtime data that's written
       clc
       lda #<data
       adc matrixSize
@@ -162,7 +163,7 @@ render
 ++  sta (z_location3),y
     bcc +
     inc .m_compWritePos
-}    
+}
 +   ldx #0
     stx z_counter1
     stx z_counter2
