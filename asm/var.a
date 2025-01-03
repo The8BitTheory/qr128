@@ -2,7 +2,9 @@
 ; this is only required on systems that don't provide a Basic POINTER function of some kind.
 
 findvar
-
+    ldx z_temp
+    stx m_zpa4
+  
 !zone findvar
 
     sta z_temp  ;this holds the variable name

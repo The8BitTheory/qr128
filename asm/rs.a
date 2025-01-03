@@ -20,20 +20,6 @@
 
 !zone reedSolomon
 
-;divisor    =   $03e4   ; current divisor
-;rsfactor =     $03e5
-
-;rsmulres =     $03e6   ; result of rs-multiply
-;rsmul1 =       $03e7   ; rs-multiply temp var 1
-;rsmul2 =       $03e9   ; rs-multiply temp var 2
-
-;m_divisors =      $0d;-$0e
-;m_divisors =    z_location3
-;loopc =        $03ed   ; loop counter in rsremainder for the loop that contains rsmultiply
-
-;rsmulx =       $03ee   ; store and recover x-reg here when calling rsmultiply
-;rsmuly =       $03ef   ; store and recover y-reg here when calling rsmultiply
-
 rs
     jsr set_location_datastream
     
@@ -238,3 +224,18 @@ rsdivisors
 
 .rsmulx      !byte 0   ; store and recover x-reg here when calling rsmultiply
 .rsmuly      !byte 0   ; store and recover y-reg here when calling rsmultiply
+
+; the adresses mentioned above used to be stored in common RAM before
+;divisor    =   $03e4   ; current divisor
+;rsfactor =     $03e5
+
+;rsmulres =     $03e6   ; result of rs-multiply
+;rsmul1 =       $03e7   ; rs-multiply temp var 1
+;rsmul2 =       $03e9   ; rs-multiply temp var 2
+
+;m_divisors =      $0d;-$0e
+;m_divisors =    z_location3
+;loopc =        $03ed   ; loop counter in rsremainder for the loop that contains rsmultiply
+
+;rsmulx =       $03ee   ; store and recover x-reg here when calling rsmultiply
+;rsmuly =       $03ef   ; store and recover y-reg here when calling rsmultiply

@@ -5,7 +5,7 @@ target = "mega65"
   !to "qr.bin.prg",cbm
   
   create_runtime = 1
-  nr_patterns = 3
+  nr_patterns = 1
   max_version = 5
   find_var    = 0
   knows_primm = 1
@@ -76,14 +76,20 @@ target = "mega65"
 
 } else if target = "mega65" {
 
-*= $a7ff
+; SYS maps $E000-$FFFF to the MEGA65 KERNAL (3.E000-3.FFFF),
+; $2000-$7FFF to 0.2000-0.7FFF, and leaves $0000-$1FFF and $8000-$DFFF "unmapped."
+
+; This allows $C000-$CFFF and $D000-$DFFF to fall through to INTERFACE and VIC registers, respectively
+; and $8000-$BFFF to fall through to bank 0 RAM.
+
+*= $c000
   ; 196-203 ($c4-$cb) are rs232 input- and output buffer start and end addresses
   ; these are free to use, as long as rs232 is not used
 
   !to "qrm65.bin",cbm
   
-  create_runtime = 0
-  nr_patterns = 3
+  create_runtime = 1
+  nr_patterns = 1
   max_version = 5
   find_var    = 0
   knows_primm = 1
@@ -91,11 +97,12 @@ target = "mega65"
 
   z_location  = $fb     ;$fa-$fb for storing indexed addresses
   z_location2 = $fd     ;$fc-$fd for storing indexed addresses
-  z_location3 = $c4     ;used for m_divisors in rs.a
+  
+  z_location3 = $c4     ;used for m_divisors in rs.a  - stored in m_zpa3
                         ;also used for storing compressed matrix for runtime in render2.a
-  z_temp      = $c6
-  z_counter1  = $c8     ;ENDCHR
-  z_counter2  = $ca     ;VERCK
+  z_temp      = $c6     ;-- stored in m_zpa4
+  z_counter1  = $c8     ;ENDCHR   -- stored in m_zpa1
+  z_counter2  = $ca     ;VERCK    -- stored in m_zpa2
 
 
 }
@@ -195,18 +202,43 @@ m_maskbit    !byte 2
 }
     jsr render
     
+    ;recover zeropage values
+    lda m_zpa1
+    sta z_counter1
+    lda m_zpa1+1
+    sta z_counter1+1
+    
+    lda m_zpa2
+    sta z_counter2
+    lda m_zpa2+1
+    sta z_counter2+1
+    
+    lda m_zpa4
+    sta z_temp
+    lda m_zpa4+1
+    sta z_temp+1
+    
+    
 !if target = "x16" {
-    lda size
-    ldx z_location3   ;these are set in render2.a
-    ldy z_location3+1
+   ;x16 is not yet a working platform.
+    ;lda size
+    ;ldx z_location3   ;these are set in render2.a
+    ;ldy z_location3+1
 } else if target = "vic20" {
     ; do nothing
 } else {
     ; z_location3 points to the runtime data
     ; m_compWritePos holds the length of the runtime
-    lda render.m_compWritePos
     ldx z_location3   ;these are set in render2.a
     ldy z_location3+1
+
+    ; restore original value of z_location3
+    lda m_zpa3
+    sta z_location3
+    lda m_zpa3+1
+    sta z_location3+1    
+    
+    lda render.m_compWritePos
 }
     
     rts
@@ -224,6 +256,10 @@ matrixSize      !byte 0,0 ;size of the matrix in modules (1 byte per module)
 rsDivisorOffset !byte 0
 m_xpos          !byte 0
 m_ypos          !byte 0
+m_zpa1          !word 0
+m_zpa2          !word 0
+m_zpa3          !word 0
+m_zpa4          !word 0
 
 !source "common.a"
 

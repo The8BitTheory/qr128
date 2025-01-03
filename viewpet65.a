@@ -1,0 +1,116 @@
+;view qrcode file
+
+
+z_location2     = $fd     ;$fd-$fe    screen-ram. indirect addressing via y
+z_readoff       = $fb
+m_screen_width  = $fc
+
+
+*=$c000
+;    !basic start
+
+    ;set screenram 
+    ;lda #$0
+    stx z_location2
+    ;lda $0a3b     ;for c128 VIC-IIe - usually holds $04
+    ;lda $0288     ;for C64 and VIC-20 - usually holds $04 for C64 and usually $1E or $10 for VIC-20
+    sty z_location2+1
+    
+    ;set linesize 
+    ;ldx $d5       ;for c64 and vic-20. usually 39 for c64 and 22 for vic-20
+    ;ldx $44       ;for c128. usually value 39
+    ;inx
+    sta m_screen_width
+    
+    ldy #0
+    ldx #0
+    
+    lda .data,x             ;load size of the qr-code data
+    inx
+    stx z_readoff           ;read offset. continuous until end of file
+    
+    sta .m_lines_left
+    sta .m_size
+        
+-   ldx z_readoff
+    lda .data,x             ;z_location points to the datafile (containing screen codes, each byte is a 2x2 petscii character)
+
+    pha
+    ;get higher nybble
+    lsr
+    lsr
+    lsr
+    lsr
+    
+    jsr render_char
+    pla
+    bcs .end
+
+    and #$F
+
+    jsr render_char
+    
+    inc z_readoff
+    
+    bne -   ;zero flag should be clear always because z_readoff never goes to rolling over
+;    jmp -  ;replacing absolute with relative instruction
+    
+    
+.end
+    
+    rts
+
+
+render_char
+    tax
+    lda .modulechars,x
+    sta (z_location2),y
+    iny
+    cpy .m_size
+    bne ++
+    
+    dec .m_lines_left
+    beq .done
+    
+    lda z_location2
+    clc
+    adc m_screen_width
+    sta z_location2
+    bcc +
+    inc z_location2+1
+    
++   ldy #0
+    
+++  clc
+    rts
+    
+.done
+    sec
+    rts
+
+.m_size           !byte 0
+.m_lines_left     !byte 0
+
+;                         0   1   2   3   4   5   6   7   8   9  10  11  12  13  14  15
+;                         0   1   2   3   4   5   6   7   8   9   A   B   C   D   E   F
+.modulechars      !byte $20,$7E,$7C,$E2,$7B,$61,$FF,$EC,$6C,$7F,$E1,$FB,$62,$FC,$FE,$A0
+
+.data             !byte $0F
+                  !byte $73, $35, $D6, $F0, $50, $57, $33, $55
+                  !byte $F5, $50, $7B, $3F, $70, $5F, $55, $53
+                  !byte $15, $7B, $00, $B1, $05, $31, $53, $33
+                  !byte $15, $D5, $91, $11, $33, $31, $39, $A1
+                  !byte $F5, $AB, $C8, $FF, $1A, $5D, $BC, $18
+                  !byte $28, $22, $7D, $3F, $11, $FF, $4B, $22
+                  !byte $7A, $4E, $4F, $08, $54, $A2, $99, $87
+                  !byte $F6, $A6, $F1, $01, $01, $A1, $10, $AD
+                  !byte $1C, $3D, $0C, $53, $C8, $B1, $38, $22
+                  !byte $24, $47, $01, $30, $21, $52, $78, $C0
+                  !byte $73, $F6, $47, $33, $5E, $C7, $F3, $95
+                  !byte $15, $05, $5F, $55, $84, $AF, $4A, $F3
+                  !byte $F4, $55, $31, $5F, $68, $A6, $46, $8D
+                  !byte $21, $33, $31, $33, $30, $10, $10, $30
+                  !byte $10
+                  
+                  
+                  

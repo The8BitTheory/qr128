@@ -13,6 +13,31 @@ init
     stx z_location
     sty z_location+1
     
+    ; save zero-page values for later recovery
+    ldy z_counter1
+    sty m_zpa1
+    ldy z_counter1+1
+    sty m_zpa1+1
+    
+    ldy z_counter2
+    sty m_zpa2
+    ldy z_counter2+1
+    sty m_zpa2+1
+    
+    ldy z_location3
+    sty m_zpa3
+    ldy z_location3+1
+    sty m_zpa3+1
+
+!if find_var = 0 {
+    ; if find_var is true, then z_temp has been saved in var.a already
+    ldy z_temp
+    sty m_zpa4
+    ldy z_temp+1
+    sty m_zpa4+1
+}
+    
+    
     ; output address for petscii-to-ascii conversion
     ldx #<data
     stx z_location2

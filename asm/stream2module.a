@@ -15,13 +15,6 @@
 ; all of the following values should be a variables, not hardcoded
 writeDirection =       1  ;1=up, 0=down
 
-;m_startAddress =   $03e4  ;$03e4-$03e5. absolute address of where the matrix starts. used for comparisons
-;m_endAddress  =    $03e6  ;$03e6-$03e7. absolute address of where the matrix ends. used for comparisons
-;m_curCol      =    $03e8  ;$03e6. current column to be written to
-;m_writeDirection = $03e9  ;$03e7. are we moving up or down when writing modules. 1=up, 0=down
-;m_one            = $03eb  ;holds the value 1. used for BIT operation
-;m_128            = $03ec  ;holds the value 128. used for BIT operation
-
 ; z_location is matrix
 ; z_location2 is datastream
 
@@ -261,3 +254,11 @@ writeAndAdvance
 .m_writeDirection  !byte 0  ;$03e7. are we moving up or down when writing modules. 1=up, 0=down
 .m_one             !byte #1  ;holds the value 1. used for BIT operation
 .m_128             !byte #128  ;holds the value 128. used for BIT operation
+
+; the addresses just mentioned above were previously stored in common RAM areas:
+;m_startAddress =   $03e4  ;$03e4-$03e5. absolute address of where the matrix starts. used for comparisons
+;m_endAddress  =    $03e6  ;$03e6-$03e7. absolute address of where the matrix ends. used for comparisons
+;m_curCol      =    $03e8  ;$03e6. current column to be written to
+;m_writeDirection = $03e9  ;$03e7. are we moving up or down when writing modules. 1=up, 0=down
+;m_one            = $03eb  ;holds the value 1. used for BIT operation
+;m_128            = $03ec  ;holds the value 128. used for BIT operation
