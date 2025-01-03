@@ -6,7 +6,7 @@ z_readoff       = $fb
 m_screen_width  = $fc
 
 
-*=$c000
+*=$7000
 ;    !basic start
 
     ;set screenram 
