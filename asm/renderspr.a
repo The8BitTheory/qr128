@@ -13,6 +13,7 @@ z_sprite_offset = z_counter2
 
     jsr set_location_to_data
     ldy #0                    ;y holds the column (reset to zero after eol is reached)
+    sty z_sprite_offset
     jsr .reset_sprite_byte
  
     ; z_location3 is used for rendering sprites   
