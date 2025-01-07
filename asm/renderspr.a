@@ -23,6 +23,11 @@ z_sprite_offset = z_counter2
     lda #>data
     adc matrixSize+1
     sta z_location3+1
+    
+    lda #0
+-   sta (z_location3),y
+    dey
+    bne -
         
 .handle_col
     lda (z_location),y
@@ -54,11 +59,12 @@ z_sprite_offset = z_counter2
     sta z_sprite_byte   ; collect module for sprite byte
 
 ++  lda z_sprite_bit    ; shift bit to the right
+    clc
     lsr
     sta z_sprite_bit
-    bne +               ; sprite bit is not zero (ie sprite byte not full)
+    bcc +               ; sprite bit is not zero, carry flag not set (ie sprite byte not full)
     
-    ; if sprite bit is zero, sprite byte is full
+    ; if sprite bit is zero (carry flag set), sprite byte is full
     jsr .write_sprite_byte
     jsr .reset_sprite_byte
     
@@ -72,7 +78,7 @@ z_sprite_offset = z_counter2
     bne .handle_col
     
     ; finish line
-    jsr .write_sprite_byte
+    ;jsr .write_sprite_byte
     ldy #0
     jsr .inc_line2
     jsr inc_line
@@ -92,18 +98,14 @@ z_sprite_offset = z_counter2
     bcc +
     inc z_location2+1
     
-+   ;todo: reset z_counter1 and z_counter2
++   jsr .write_sprite_byte
     rts
 
 .reset_sprite_byte
-    stx z_temp
-    
-    ldx #0
-    stx z_sprite_byte            ;used to collect the byte value for 8 modules each
-    ldx #%10000000
-    stx z_sprite_bit            ;used to keep track of bit
-    
-    ldx z_temp
+    lda #0
+    sta z_sprite_byte            ;used to collect the byte value for 8 modules each
+    lda #%10000000
+    sta z_sprite_bit            ;used to keep track of bit    
     rts
 
 .write_sprite_byte
