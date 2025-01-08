@@ -1,8 +1,8 @@
-﻿; this renders 1 module per petscii-character
-; so, output is limited to nr of lines on screen (23 on vic20, 25 on all the other machines)
-; that leaves the vic20 with version 1 codes and all others with version 2 codes
+; this renders the qr-code to a 64-pixel wide vic-iv sprite.
 ; z_location contains the pointer to read from
-; z_location2 is the pointer to screen ram to write to
+; z_location2 is the pointer to write the sprite pixels to.
+; 
+
 renderspr
 
 !zone render
@@ -10,25 +10,36 @@ z_sprite_bit    = z_counter1
 z_sprite_byte   = z_counter1+1
 z_sprite_offset = z_counter2
 
-
     jsr set_location_to_data
     ldy #0                    ;y holds the column (reset to zero after eol is reached)
     sty z_sprite_offset
+    
+    lda #%00100000
     jsr .reset_sprite_byte
- 
-    ; z_location3 is used for rendering sprites   
+     
+    ; z_location3 is used for rendering sprites
     clc
     lda #<data
     adc matrixSize
     sta z_location3
+    sta .m_l3
     lda #>data
     adc matrixSize+1
     sta z_location3+1
+    sta .m_l3+1
     
     lda #0
 -   sta (z_location3),y
     dey
     bne -
+
+; start writing pixels after two rows (8 bytes for each row)
+    clc
+    lda z_location3
+    adc #16
+    sta z_location3
+    bcc .handle_col
+    inc z_location3+1
         
 .handle_col
     lda (z_location),y
@@ -63,27 +74,27 @@ z_sprite_offset = z_counter2
     clc
     lsr
     sta z_sprite_bit
-    bcc +               ; sprite bit is not zero, carry flag not set (ie sprite byte not full)
+    bcc +               ; carry flag not set (ie sprite byte not full)
     
     ; if sprite bit is zero (carry flag set), sprite byte is full
     jsr .write_sprite_byte
+    lda #%10000000
     jsr .reset_sprite_byte
     
 +   txa
     sta (z_location2),y
-    bne +
+    ;bne +
 
     ;move on
-+   iny
+    iny
     cpy size
     bne .handle_col
     
     ; finish line
-    ;jsr .write_sprite_byte
     ldy #0
     jsr .inc_line2
-    jsr inc_line
-    cmp stream2module.m_endAddress
+    jsr inc_line  
+    cmp stream2module.m_endAddress    ;needs to have z_location in accumulator
     beq .end
     jmp .handle_col
 
@@ -100,24 +111,38 @@ z_sprite_offset = z_counter2
     inc z_location2+1
     
 +   jsr .write_sprite_byte
-    rts
+    lda #0
+    sta z_sprite_offset
+    lda #%00100000
+    jsr .reset_sprite_byte
+    clc
+    lda z_location3
+    adc #8
+    sta z_location3
+    bcc +
+    inc z_location3+1
+
++   rts
 
 .reset_sprite_byte
+;    lda #%10000000             ;A needs to be set before calling this subroutine
+    sta z_sprite_bit            ;used to keep track of bit    
     lda #0
     sta z_sprite_byte            ;used to collect the byte value for 8 modules each
-    lda #%10000000
-    sta z_sprite_bit            ;used to keep track of bit    
     rts
 
 .write_sprite_byte
-    lda z_sprite_byte
     sty z_temp
-    ldy z_sprite_offset
+    
+    ldy z_sprite_offset    
+    lda z_sprite_byte
     sta (z_location3),y
     inc z_sprite_offset
+
     ldy z_temp
     rts
 
-.m_one        !byte 1
-.m_64         !byte 64
-
+.m_one          !byte 1
+.m_64           !byte 64
+.m_l3           !word 0
+.m_writeOffset  !byte 0
