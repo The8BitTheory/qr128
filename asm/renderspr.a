@@ -22,10 +22,44 @@ z_sprite_offset = z_counter2
     lda #<data
     adc matrixSize
     sta z_location3
-    sta .m_l3
     lda #>data
     adc matrixSize+1
     sta z_location3+1
+    
+    ; increase z_location3 to the next 64-byte increment ($40, $80, or $c0)
+    lda #%00111111
+    bit z_location3
+    beq ++            ; if zero, we are at a 64-byte increment already
+    
+    clc
+    lda #$40          
+    cmp z_location3   ; is LB lower than 64? set it to 64
+    bcs +
+    sta z_location3
+    bcc ++            ; is really JMP, so read as unconditional branch
+    
++   clc
+    lda #$80
+    cmp z_location3
+    bcs +
+    sta z_location3
+    bcc ++
+    
++   clc
+    lda #$c0
+    cmp z_location3
+    bcs +
+    sta z_location3
+    bcc ++
+    
++   lda #0
+    sta z_location3
+    inc z_location3+1
+    
+; store z_location3 for later return to caller. current value will be changed.
+++  lda z_location3
+    sta .m_l3
+    lda z_location3+1
     sta .m_l3+1
     
     lda #0
@@ -146,3 +180,4 @@ z_sprite_offset = z_counter2
 .m_64           !byte 64
 .m_l3           !word 0
 .m_writeOffset  !byte 0
+.m_64byte       !byte %00111111
