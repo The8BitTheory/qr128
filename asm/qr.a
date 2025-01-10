@@ -1,4 +1,4 @@
-; qr-code generator
+﻿; qr-code generator
 ; parameters:
 ; - reads the location of the string to be encoded from a zeropage location (eg $fb/$fc)
 ;   the string must be zero-terminated (that saves us the need to provide string-length as a parameter)
@@ -31,20 +31,15 @@ target = "mega65"
 
   !to "qrspr.7000",cbm
   
-  create_runtime = 0
   nr_patterns = 1
   max_version = 5
-  find_var    = 0
   knows_primm = 1
-  basic_aio_starter = 0
   
   ;$02-$8f are supposed to be basic-only addresses. it should be save to preserve and restore this area
 
   z_location  = $fb     ;$fb-$fc for storing indexed addresses
   z_location2 = $fd     ;$fd-$fe for storing indexed addresses
   
-  z_location3 = $c4     ;used for m_divisors in rs.a  - stored in m_zpa3
-                        ;also used for storing compressed matrix for runtime in render2.a
   z_temp      = $c6     ;-- stored in m_zpa4
   z_counter1  = $c8     ;ENDCHR   -- stored in m_zpa1
   z_counter2  = $ca     ;VERCK    -- stored in m_zpa2
@@ -64,28 +59,18 @@ m_maskbit    !byte 2
     jsr write_patterns
     jsr stream_to_module
 
-; load screen-ram location into z_location2    
-  
-    ;lda $d060
-    ;sta z_location2
-    ;lda $d061
-    ;sta z_location2+1
-    
-    ;ldx #80
-    ;stx rsDivisorOffset
-
     jsr renderspr
 
-    ; z_location3 points to the runtime data
-    ; m_compWritePos holds the length of the runtime
+    ; z_location points to the runtime data
     ldx render.m_l3   ;these are set in render2.a
-    stx $fb
+    stx z_location
     ldy render.m_l3+1
-    sty $fc
+    sty z_location+1
+    ldy render.m_l3+2
+    sty z_location2
     
     lda size
-    sta $fd
-
+    sta z_location2+1
     
     ;recover zeropage values
     lda m_zpa1
@@ -102,12 +87,6 @@ m_maskbit    !byte 2
     sta z_temp
     lda m_zpa4+1
     sta z_temp+1
-
-    ; restore original value of z_location3
-    lda m_zpa3
-    sta z_location3
-    lda m_zpa3+1
-    sta z_location3+1
     
     ldx #3
 -   lda m_zp4,x
@@ -135,7 +114,6 @@ m_xpos          !byte 0
 m_ypos          !byte 0
 m_zpa1          !word 0
 m_zpa2          !word 0
-m_zpa3          !word 0
 m_zpa4          !word 0
 m_zp4           !word 0,0 ;used to preserve and recover zero-page addresses
 

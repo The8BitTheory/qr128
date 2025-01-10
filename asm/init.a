@@ -1,4 +1,4 @@
-; this calculates all sizes according to the length of the content
+﻿; this calculates all sizes according to the length of the content
 ; accumulator holds bank of address
 ; $fb address lb
 ; $fc address hb
@@ -25,11 +25,6 @@ init
     ldy z_counter2+1
     sty m_zpa2+1
     
-    ldy z_location3
-    sty m_zpa3
-    ldy z_location3+1
-    sty m_zpa3+1
-
     ldy z_temp
     sty m_zpa4
     ldy z_temp+1

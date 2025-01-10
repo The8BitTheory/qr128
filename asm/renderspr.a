@@ -14,8 +14,10 @@ z_sprite_offset = z_counter2
     ldy #0                    ;y holds the column (reset to zero after eol is reached)
     sty z_sprite_offset
     ; z_location2 will hold the value of spriteOut times 64l
-    sty z_location2
-    sty z_location2+1
+    sty z_zp4
+    sty z_zp4+1
+    sty z_zp4+2
+    sty z_zp4+3
     
     lda #%00100000
     jsr .reset_sprite_byte
@@ -23,11 +25,16 @@ z_sprite_offset = z_counter2
     ; calculate sprite address, based on 16-bit sprite-index
     ldx spriteOut
 -   clc
-    lda z_location2
+    lda z_zp4
     adc #$40
-    sta z_location2
+    sta z_zp4
     bcc +
-    inc z_location2+1
+    lda z_zp4+1
+    adc #0
+    sta z_zp4+1
+    bcc +
+    inc z_zp4+2
+    
 +   dex
     bne -
     lda spriteOut+1
@@ -36,25 +43,28 @@ z_sprite_offset = z_counter2
     jmp -
 
 
-; store z_location2 for later return to caller. current value will be changed.
-+   lda z_location2
+; store z_zp4 for later return to caller. current value will be changed.
++   lda z_zp4
     sta .m_l3
-    lda z_location2+1
+    lda z_zp4+1
     sta .m_l3+1
+    lda z_zp4+2
+    sta .m_l3+2
     
     ;clear memory area
     lda #0
--   sta (z_location2),y
-    dey
+    ldz #0
+-   sta [z_zp4],z
+    dez
     bne -
 
 ; start writing pixels after two rows (8 bytes for each row)
     clc
-    lda z_location2
+    lda z_zp4
     adc #16
-    sta z_location2
+    sta z_zp4
     bcc .handle_col
-    inc z_location2+1
+    inc z_zp4+1
         
 .handle_col
     lda (z_location),y
@@ -74,18 +84,18 @@ z_sprite_offset = z_counter2
     
 .write_value
     bit .m_one
-    beq ++
+    beq +
 
     ;ldx #32             ; black module (prints space)
                         ; don't need to do anything for sprite here (as bits are 0 already)
-    ;jmp ++
+;    jmp ++
 
-    ldx #160            ; white module (prints inverse space)
+    ;ldx #160            ; white module (prints inverse space)
     lda z_sprite_byte
     ora z_sprite_bit
     sta z_sprite_byte   ; collect module for sprite byte
 
-++  lda z_sprite_bit    ; shift bit to the right
++   lda z_sprite_bit    ; shift bit to the right
     clc
     lsr
     sta z_sprite_bit
@@ -96,12 +106,8 @@ z_sprite_offset = z_counter2
     lda #%10000000
     jsr .reset_sprite_byte
     
-+   ;txa
-    ;sta (z_location2),y
-    ;bne +
-
     ;move on
-    iny
++   iny
     cpy size
     bne .handle_col
     
@@ -117,48 +123,38 @@ z_sprite_offset = z_counter2
     rts
     
     
-.inc_line2
-    ;lda z_location2
-    ;clc
-    ;adc rsDivisorOffset
-    ;sta z_location2
-    ;bcc +
-    ;inc z_location2+1
-    
+.inc_line2    
     jsr .write_sprite_byte
     lda #0
     sta z_sprite_offset
     lda #%00100000
     jsr .reset_sprite_byte
     clc
-    lda z_location2
+    lda z_zp4
     adc #8
-    sta z_location2
+    sta z_zp4
     bcc +
-    inc z_location2+1
+    inc z_zp4+1
 
 +   rts
 
 .reset_sprite_byte
-;    lda #%10000000             ;A needs to be set before calling this subroutine
     sta z_sprite_bit            ;used to keep track of bit    
     lda #0
     sta z_sprite_byte            ;used to collect the byte value for 8 modules each
     rts
 
 .write_sprite_byte
-    sty z_temp
+    ;sty z_temp
     
-    ldy z_sprite_offset    
+    ldz z_sprite_offset    
     lda z_sprite_byte
-    sta (z_location2),y
+    sta [z_zp4],z
     inc z_sprite_offset
 
-    ldy z_temp
+    ;ldy z_temp
     rts
 
 .m_one          !byte 1
 .m_64           !byte 64
-.m_l3           !word 0
-.m_writeOffset  !byte 0
-.m_64byte       !byte %00111111
+.m_l3           !byte 0,0,0
