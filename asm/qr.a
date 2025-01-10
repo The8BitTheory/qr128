@@ -3,85 +3,21 @@
 ; - reads the location of the string to be encoded from a zeropage location (eg $fb/$fc)
 ;   the string must be zero-terminated (that saves us the need to provide string-length as a parameter)
 ; - bank of the string address
-; returns: location of 
+; returns: index of sprite-location, written to location of input parameter (64 byte intervals)
+
+; this is the version for the mega65 introdisk #4
+; it renders to sprite data and parameters required might be different to other use-cases
+
+; example:
+; poke $fb,00:poke $fc,$7c : rem input string location $7c00 
+; poke $fd,$f0:poke $fe,$01: rem output sprite index $01f0 (496 dec -> 31744 in bank 0)
+; SYS qr,0,$fb,$fd : rem read input string from bank 0, $fb-$fc, and write to sprite-index
+
+!cpu 4502
 
 target = "mega65"
 
-!if target = "c128" {
-*= $1300
-  !to "qr.bin.prg",cbm
-  
-  create_runtime = 1
-  nr_patterns = 1
-  max_version = 5
-  find_var    = 0
-  knows_primm = 1
-  basic_aio_starter = 0
 
-  z_location  = $fb     ;$fa-$fb for storing indexed addresses
-  z_location2 = $fd     ;$fc-$fd for storing indexed addresses
-  z_location3 = $bd     ;used for m_divisors in rs.a
-                        ;also used for storing compressed matrix for runtime in render2.a
-  z_temp      = $bf
-  z_counter1  = $b0     ;ENDCHR
-  z_counter2  = $a3     ;CHARAC or INTEGR
-
-} else if target = "c64" {
-*= $C000
-  !to "qr64.bin.prg",cbm
-
-  create_runtime = 1
-  nr_patterns = 3
-  max_version = 4
-  find_var    = 1
-  knows_primm = 0
-  basic_aio_starter = 0
-  
-  z_location  = $fb     ;$fa-$fb for storing indexed addresses
-  z_location2 = $fd     ;$fc-$fd for storing indexed addresses
-  z_location3 = $16     ; not needed on vic-20
-  z_temp      = $02
-  z_counter1  = $08     ;ENDCHR
-  z_counter2  = $0a     ;VERCK
-  
-} else if target = "vic20" {
-*= $1001
-  !to "qr20.bin.prg",cbm
-
-  create_runtime = 0
-  nr_patterns = 1
-  max_version = 4
-  find_var    = 1
-  knows_primm = 0
-  basic_aio_starter = 1
-  
-  z_location  = $fb     ;$fa-$fb for storing indexed addresses
-  z_location2 = $fd     ;$fc-$fd for storing indexed addresses
-  z_location3 = $16     ; not needed on vic-20
-  z_temp      = $02
-  z_counter1  = $08     ;ENDCHR
-  z_counter2  = $0a     ;VERCK
-  
-} else if target = "x16" {
-*= $a000
-  !to "qrx16.bin",plain
-  
-  create_runtime = 1
-  nr_patterns = 3
-  max_version = 5
-  find_var    = 0
-  knows_primm = 0
-  basic_aio_starter = 0
-
-  z_location  = $22     ;$fb-$fc for storing indexed addresses
-  z_location2 = $24     ;$fd-$fe for storing indexed addresses
-  z_location3 = $26     ;$14-$15 LINNUM. we use this to write the "compressed" matrix
-  z_temp      = $28
-  z_counter1  = $29     ;ENDCHR
-  z_counter2  = $30     ;VERCK
-  m_divisors =  $31    ;$31-$32
-
-} else if target = "mega65" {
 
 ; SYS maps $E000-$FFFF to the MEGA65 KERNAL (3.E000-3.FFFF),
 ; $2000-$7FFF to 0.2000-0.7FFF, and leaves $0000-$1FFF and $8000-$DFFF "unmapped."
@@ -93,76 +29,28 @@ target = "mega65"
   ; 196-203 ($c4-$cb) are rs232 input- and output buffer start and end addresses
   ; these are free to use, as long as rs232 is not used
 
-  !to "qrm65.bin",cbm
+  !to "qrspr.7000",cbm
   
-  create_runtime = 1
+  create_runtime = 0
   nr_patterns = 1
   max_version = 5
   find_var    = 0
   knows_primm = 1
   basic_aio_starter = 0
+  
+  ;$02-$8f are supposed to be basic-only addresses. it should be save to preserve and restore this area
 
-  z_location  = $fb     ;$fa-$fb for storing indexed addresses
-  z_location2 = $fd     ;$fc-$fd for storing indexed addresses
+  z_location  = $fb     ;$fb-$fc for storing indexed addresses
+  z_location2 = $fd     ;$fd-$fe for storing indexed addresses
   
   z_location3 = $c4     ;used for m_divisors in rs.a  - stored in m_zpa3
                         ;also used for storing compressed matrix for runtime in render2.a
   z_temp      = $c6     ;-- stored in m_zpa4
   z_counter1  = $c8     ;ENDCHR   -- stored in m_zpa1
   z_counter2  = $ca     ;VERCK    -- stored in m_zpa2
+  z_zp4       = $8b
 
-}
-
-!if basic_aio_starter {
-    ;75 characters fit into RAM
-    
-    !byte $31,$10,$05,$00
-    !byte $54,$24,$b2,$22
-    !pet "https://github.com/the8bittheory/qr128"
-    ;!pet "forum64.de"
-    !byte $22,$00
-    
-    ;15 poke,poke,print
-    !byte $54,$10,$0f,$00,$97
-    !pet "36879,1"
-    !byte $3a,$97
-    !pet "646,1"
-    !byte $3a,$99,$22,$93,$22,$3a,$97,$32,$31,$34,$2c,$31,$36,$3a,$99,$00
-    ;poke 21
-    
-    ;20 poke
-    !byte $6e,$10,$14,$00,$97,$37,$38,$30,$2c,$c6,$28,$22,$54,$22,$29
-    !byte $3a
-    !byte $99,$54,$24,$3a
-    
-    ;!basic 40,start
-    ;!byte $83,$10,$28,$00,
-    !byte $9e
-    !byte '0' + start % 10000 / 1000
-    !byte '0' + start % 1000 / 100
-    !byte '0' + start % 100 / 10
-    !byte '0' + start % 10
-    !byte $00
-    
-    ;input t$
-    !byte $98,$10,$3c,$00,$85,$54,$24,$3a,$89,$31,$35,$00
-    
-    !byte $00,$00
-}
-
-
-
-    ;jmp .generate
-    ;jmp save
-
-
-    ;cpx #0
-    ;beq +     ;x-reg not set, ie no maskbit provided. go with default value of 2 (set down below)
-    ;stx render.m_maskbit
-start
-;!if find_var {
-;    jsr findvar
-;}
+;start
     jsr init
     bcs .too_long
     bcc +
@@ -177,35 +65,15 @@ m_maskbit    !byte 2
     jsr stream_to_module
 
 ; load screen-ram location into z_location2    
-!if target = "x16" {
-    lda #<*+4096
-    sta z_location2
-    lda #>*+4096
-    sta z_location2+1
-    
-    ldx #$80
-    stx rsDivisorOffset
-    
-} else if target = "mega65" {
   
-    lda $d060
-    sta z_location2
-    lda $d061
-    sta z_location2+1
+    ;lda $d060
+    ;sta z_location2
+    ;lda $d061
+    ;sta z_location2+1
     
-    ldx #80
-    stx rsDivisorOffset
-} else {
-    ;set screenram
-    lda #$0
-    sta z_location2
-    lda $0a3b
-    sta z_location2+1
-    ;set linesize (use rsDivisorOffset because we don't need it any longer at this stage)
-    ldx $ee
-    inx
-    stx rsDivisorOffset
-}
+    ;ldx #80
+    ;stx rsDivisorOffset
+
     jsr renderspr
 
     ; z_location3 points to the runtime data
@@ -215,7 +83,7 @@ m_maskbit    !byte 2
     ldy render.m_l3+1
     sty $fc
     
-    lda z_counter2
+    lda size
     sta $fd
 
     
@@ -234,15 +102,18 @@ m_maskbit    !byte 2
     sta z_temp
     lda m_zpa4+1
     sta z_temp+1
-    
-
-    
 
     ; restore original value of z_location3
     lda m_zpa3
     sta z_location3
     lda m_zpa3+1
-    sta z_location3+1    
+    sta z_location3+1
+    
+    ldx #3
+-   lda m_zp4,x
+    sta z_zp4,x
+    dex
+    bne -
     
     
     rts
@@ -254,6 +125,8 @@ m_maskbit    !byte 2
          
 size            !byte 0   ;size of one axis-length of the final matrix
 contentLength   !byte 0   ;size of the provided URL, also used when writing the "compressed" matrix in render2.a
+inputBank       !byte 0
+spriteOut       !word 0
 eccLength       !byte 0   ;nr of ecc bytes to generate  
 streamLength    !byte 0 
 matrixSize      !byte 0,0 ;size of the matrix in modules (1 byte per module)
@@ -264,12 +137,9 @@ m_zpa1          !word 0
 m_zpa2          !word 0
 m_zpa3          !word 0
 m_zpa4          !word 0
+m_zp4           !word 0,0 ;used to preserve and recover zero-page addresses
 
 !source "common.a"
-
-!if find_var {
-  !source "var.a"
-}
 
 !source "init.a"
 !source "p2a.a"           ; reads petscii bytes from z_location and writes ascii to z_location2 (which is matrix-start)
@@ -282,8 +152,5 @@ m_zpa4          !word 0
 !source "stream2module.a"
 
 !source "renderspr.a"
-
-;!source "fsave.a"
-
 
 data    !byte 0

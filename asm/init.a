@@ -1,17 +1,18 @@
 ; this calculates all sizes according to the length of the content
-; accumulator holds length
-; x holds bank 1 address lb
-; y holds bank 1 address hb
+; accumulator holds bank of address
+; $fb address lb
+; $fc address hb
 
 k_primm   = $ff7d; works for c128 and mega65
 
 init
 !zone init
-    sta contentLength
+    sta inputBank
     
-    ; input address for petscii-to-ascii conversion
-    stx z_location
-    sty z_location+1
+    lda z_location2
+    sta spriteOut
+    lda z_location2+1
+    sta spriteOut+1
     
     ; save zero-page values for later recovery
     ldy z_counter1
@@ -29,24 +30,53 @@ init
     ldy z_location3+1
     sty m_zpa3+1
 
-!if find_var = 0 {
-    ; if find_var is true, then z_temp has been saved in var.a already
     ldy z_temp
     sty m_zpa4
     ldy z_temp+1
     sty m_zpa4+1
-}
     
     
+    ; store some zero-page values for later recovery. and set these to value zero
+    ldx #3
+-   lda z_zp4,x
+    sta m_zp4,x
+    lda #0
+    sta z_zp4,x
+    dex
+    bne -
+        
     ; output address for petscii-to-ascii conversion
     ldx #<data
     stx z_location2
     ldx #>data
     stx z_location2+1
         
+    ; find out length of input
+    ldy #0
+    sty contentLength
+    
+    lda z_location
+    sta z_zp4
+    lda z_location+1
+    sta z_zp4+1
+    lda inputBank
+    sta z_zp4+2
+    lda #0
+    sta z_zp4+3
+    
+    ldz #0
+-   lda [z_zp4],z
+    beq +
+    inc contentLength
+    inz
+    bne -
+        
 ;calculate version.
     ; decreasing the version boundaries by one byte, because of mode and length bits (eg lower than 108)
     ; max supported version is 5 -> 108 bytes -2=106
+    
++   lda contentLength
+    
     cmp #18
     bcs +
     lda #21
@@ -152,5 +182,4 @@ init
 .end
     sec
 ++  rts
-
 
