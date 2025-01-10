@@ -2,7 +2,7 @@
 ; takes the result of pointer(x) as input (i). regx=loc lb, regy=loc hb, acc=length
 ; bank 1, peek(i) gives length of string, peek(i+1)+peek(i+2)*256 gives address of string
 
-; this routine is taken from the GoDot QR-Code Generator Module by Arndt Dettke
+; this routine is inspired from the GoDot QR-Code Generator Module by Arndt Dettke
 
 
 k_indfet = $ff74
@@ -10,14 +10,17 @@ k_indfet = $ff74
 p2a
 
     ldy #0
-.loop 
-!if target = "c128" {
-    lda #z_location
-    ldx #1
-    jsr k_indfet
-} else {
-    lda (z_location),y
-}
+    ldz #0
+    lda z_location
+    sta z_zp4
+    lda z_location+1
+    sta z_zp4+1
+    lda inputBank
+    sta z_zp4+2
+    stz z_zp4+3
+
+.loop
+    lda [z_zp4],z
   
   ; IF A>=193 AND A<=218 THEN A=A-128
   ; < 193
@@ -26,7 +29,7 @@ p2a
   
   ; > 218
   cmp #218
-  beq .comp2  
+  bcs .comp2  
   
   ; then a=a-128
   sec
@@ -38,11 +41,11 @@ p2a
 ; a < 65
 .comp2
   cmp #65
-  bcc .write
+  bcc  .write
   
 ; > 91
   cmp #91
-  beq .write
+  bcs .write
   
   clc
   adc #32
@@ -50,6 +53,7 @@ p2a
 .write
   sta (z_location2),y
   iny
+  inz
   cpy contentLength
   bne .loop
   

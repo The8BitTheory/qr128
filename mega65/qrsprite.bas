@@ -18,9 +18,9 @@
 # UPPER BOUND OF BASIC
 #4 END
 
-#30 BLOAD"QRSPR.7000",B0
+30 BLOAD"QRSPR.7000",B0
 35 H$="HTTPS://"
-40 T$="GITHUB.COM"
+40 T$="WWW.YOUTUBE.COM/WATCH?V=MRZK"
 
 50 T$=H$+T$
 
@@ -66,36 +66,36 @@
 
 
 # RENDER SPRITE
-#    uint8_t  sprwidth  = 64;
-#    uint8_t  sprheight = 64;
-#    uint16_t sprptrs   = 0x0400;
-#    uint16_t sprdata   = 0x0600;
+#    UINT8_T  SPRWIDTH  = 64;
+#    UINT8_T  SPRHEIGHT = 64;
+#    UINT16_T SPRPTRS   = 0X0400;
+#    UINT16_T SPRDATA   = 0X0600;
 
-#    VIC2.SE        = 1;          // $d015 - enable the sprite
-#    VIC4.SPRPTRADR = sprptrs;    // $d06c - location of sprite pointers
-#    VIC4.SPRPTR16  = 1;          // $d06e - 16 bit sprite pointers
-#    VIC2.BSP       = 0;          // $d01b - sprite background priority
-#    VIC4.SPRX64EN  = 1;          // $d057 - 64 pixel wide sprites
-#    VIC4.SPR16EN   = 0;          // $d06b - turn off Full Colour Mode
-#    VIC4.SPRHGTEN  = 1;          // $d055 - enable setting of sprite height
-#    VIC4.SPR640    = 0;          // $d054 - disable SPR640 for all sprites
-#    VIC4.SPRHGHT   = sprheight;  // $d056 - set sprite height to 64 pixels for sprites that have SPRHGTEN enabled
-#    VIC2.SEXX      = 255;        // $d01d - enable x stretch
-#    VIC2.SEXY      = 255;        // $d017 - enable y stretch
-#    VIC2.S0X       = 140;        // $d000 - sprite x position
-#    VIC2.S0Y       = 110;        // $d001 - sprite y position
-#    VIC2.SPR0COL   = 10;         // $d027 - sprite colour
+#    VIC2.SE        = 1;          // $D015 - ENABLE THE SPRITE
+#    VIC4.SPRPTRADR = SPRPTRS;    // $D06C - LOCATION OF SPRITE POINTERS
+#    VIC4.SPRPTR16  = 1;          // $D06E - 16 BIT SPRITE POINTERS
+#    VIC2.BSP       = 0;          // $D01B - SPRITE BACKGROUND PRIORITY
+#    VIC4.SPRX64EN  = 1;          // $D057 - 64 PIXEL WIDE SPRITES
+#    VIC4.SPR16EN   = 0;          // $D06B - TURN OFF FULL COLOUR MODE
+#    VIC4.SPRHGTEN  = 1;          // $D055 - ENABLE SETTING OF SPRITE HEIGHT
+#    VIC4.SPR640    = 0;          // $D054 - DISABLE SPR640 FOR ALL SPRITES
+#    VIC4.SPRHGHT   = SPRHEIGHT;  // $D056 - SET SPRITE HEIGHT TO 64 PIXELS FOR SPRITES THAT HAVE SPRHGTEN ENABLED
+#    VIC2.SEXX      = 255;        // $D01D - ENABLE X STRETCH
+#    VIC2.SEXY      = 255;        // $D017 - ENABLE Y STRETCH
+#    VIC2.S0X       = 140;        // $D000 - SPRITE X POSITION
+#    VIC2.S0Y       = 110;        // $D001 - SPRITE Y POSITION
+#    VIC2.SPR0COL   = 10;         // $D027 - SPRITE COLOUR
 
-#    poke(sprptrs+0, ((sprdata/64) >> 0) & 0xff); // data for sprite 0 is at 0x0600 - low byte  of 16bit ptr
-#    poke(sprptrs+1, ((sprdata/64) >> 8) & 0xff); // data for sprite 0 is at 0x0600 - high byte of 16bit ptr
+#    POKE(SPRPTRS+0, ((SPRDATA/64) >> 0) & 0XFF); // DATA FOR SPRITE 0 IS AT 0X0600 - LOW BYTE  OF 16BIT PTR
+#    POKE(SPRPTRS+1, ((SPRDATA/64) >> 8) & 0XFF); // DATA FOR SPRITE 0 IS AT 0X0600 - HIGH BYTE OF 16BIT PTR
 
-#    for(uint16_t i = 0; i<(sprwidth/8)*sprheight; i++) // fill 0x0600 with checkerboard
+#    FOR(UINT16_T I = 0; I<(SPRWIDTH/8)*SPRHEIGHT; I++) // FILL 0X0600 WITH CHECKERBOARD
 #    {
-#        uint8_t val = 0b01010101;
-#        if((i/8) % 2 == 1)
-#            val = 0b10101010;
+#        UINT8_T VAL = 0B01010101;
+#        IF((I/8) % 2 == 1)
+#            VAL = 0B10101010;
 
-#        poke(sprdata+i, val);
+#        POKE(SPRDATA+I, VAL);
 #    }
     
 500 BANK128
@@ -109,7 +109,7 @@
 508 POKE $D057,1
 510 POKE $D06B,0
 512 POKE $D055,1
-514 POKE $D054,0
+#514 POKE $D054,0
 516 POKE $D056,L+4
 518 POKE $D01D,255
 520 POKE $D017,255
