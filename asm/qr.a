@@ -13,7 +13,7 @@
 ; poke $fd,$f0:poke $fe,$01: rem output sprite index $01f0 (496 dec -> 31744 in bank 0)
 ; SYS qr,0,$fb,$fd : rem read input string from bank 0, $fb-$fc, and write to sprite-index
 
-!cpu 4502
+!cpu m65
 
 target = "mega65"
 
