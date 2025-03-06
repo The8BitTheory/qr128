@@ -62,11 +62,11 @@ m_maskbit    !byte 2
     jsr renderspr
 
     ; z_location points to the runtime data
-    ldx render.m_l3   ;these are set in renderspr.a
+    ldx m_l3   ;these are set in renderspr.a
     stx z_location
-    ldy render.m_l3+1
+    ldy m_l3+1
     sty z_location+1
-    ldy render.m_l3+2
+    ldy m_l3+2
     sty z_location2
     
     lda size

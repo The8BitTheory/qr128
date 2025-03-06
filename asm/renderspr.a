@@ -45,11 +45,11 @@ z_sprite_offset = z_counter2
 
 ; store z_zp4 for later return to caller. current value will be changed.
 +   lda z_zp4
-    sta .m_l3
+    sta m_l3
     lda z_zp4+1
-    sta .m_l3+1
+    sta m_l3+1
     lda z_zp4+2
-    sta .m_l3+2
+    sta m_l3+2
     
     ;clear memory area
     lda #0
@@ -115,7 +115,7 @@ z_sprite_offset = z_counter2
     ldy #0
     jsr .inc_line2
     jsr inc_line  
-    cmp stream2module.m_endAddress    ;needs to have z_location in accumulator
+    cmp m_endAddress    ;needs to have z_location in accumulator
     beq .end
     jmp .handle_col
 
@@ -157,4 +157,4 @@ z_sprite_offset = z_counter2
 
 .m_one          !byte 1
 .m_64           !byte 64
-.m_l3           !byte 0,0,0
+m_l3           !byte 0,0,0
