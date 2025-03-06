@@ -1,4 +1,4 @@
-﻿; qr-code generator
+; qr-code generator
 ; parameters:
 ; - reads the location of the string to be encoded from a zeropage location (eg $fb/$fc)
 ;   the string must be zero-terminated (that saves us the need to provide string-length as a parameter)
@@ -62,7 +62,7 @@ m_maskbit    !byte 2
     jsr renderspr
 
     ; z_location points to the runtime data
-    ldx render.m_l3   ;these are set in render2.a
+    ldx render.m_l3   ;these are set in renderspr.a
     stx z_location
     ldy render.m_l3+1
     sty z_location+1
