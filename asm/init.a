@@ -1,4 +1,4 @@
-﻿; this calculates all sizes according to the length of the content
+; this calculates all sizes according to the length of the content
 ; accumulator holds bank of address
 ; $fb address lb
 ; $fc address hb
