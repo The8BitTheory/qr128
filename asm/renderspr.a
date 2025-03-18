@@ -1,4 +1,10 @@
-; this renders the qr-code to a 64-pixel wide vic-iv sprite.
+; mega65:
+;  this renders the qr-code to a 64-pixel wide vic-iv sprite.
+; c128-vdc:
+;  this renders the qr-code to pixel-data.
+; else:
+;  not implemented yet
+
 ; z_location contains the pointer to read from
 ; z_location2 is the pointer to write the sprite pixels to.
 ; 
@@ -13,67 +19,69 @@ z_sprite_offset = z_counter2
     jsr set_location_to_data
     ldy #0                    ;y holds the column (reset to zero after eol is reached)
     sty z_sprite_offset
+    ; z_location2 will hold the value of spriteOut times 64
+    sty z_zp4
+    sty z_zp4+1
+    sty z_zp4+2
+    sty z_zp4+3
     
     lda #%00100000
     jsr .reset_sprite_byte
-     
-    ; z_location3 is used for rendering sprites
-    clc
-    lda #<data
-    adc matrixSize
-    sta z_location3
-    lda #>data
-    adc matrixSize+1
-    sta z_location3+1
+
+    ; calculate sprite address, based on 16-bit sprite-index
+    ldx spriteOut
+-   clc
+    lda z_zp4
+    adc #$40
+    sta z_zp4
+    bcc +
+    lda z_zp4+1
+    adc #0
+    sta z_zp4+1
+    bcc +
+    inc z_zp4+2
     
-    ; increase z_location3 to the next 64-byte increment ($40, $80, or $c0)
-    lda #%00111111
-    bit z_location3
-    beq ++            ; if zero, we are at a 64-byte increment already
++   dex
+    bne -
+    lda spriteOut+1
+    beq +
+    dec spriteOut+1
+    jmp -
+
+
+; store z_zp4 for later return to caller. current value will be changed.
++   lda z_zp4
+    sta m_l3
+    lda z_zp4+1
+    sta m_l3+1
+    lda z_zp4+2
+    sta m_l3+2
     
-    clc
-    lda #$40          
-    cmp z_location3   ; is LB lower than 64? set it to 64
-    bcs +
-    sta z_location3
-    bcc ++            ; is really JMP, so read as unconditional branch
-    
-+   clc
-    lda #$80
-    cmp z_location3
-    bcs +
-    sta z_location3
-    bcc ++
-    
-+   clc
-    lda #$c0
-    cmp z_location3
-    bcs +
-    sta z_location3
-    bcc ++
-    
-+   lda #0
-    sta z_location3
-    inc z_location3+1
-    
-; store z_location3 for later return to caller. current value will be changed.
-++  lda z_location3
-    sta .m_l3
-    lda z_location3+1
-    sta .m_l3+1
-    
+    ;clear memory area
     lda #0
--   sta (z_location3),y
-    dey
+!if target = "mega65" {
+; mega65 can use z-register to define bank
+
+    ldz #0
+-   sta [z_zp4],z
+    dez
+} else if target = "c128" {
+; c128 needs to call FAR method to write to specific bank
+
+} else {
+; c64 and vic20 just write to regular memory
+; x16 might need writing to vram directly
+    
+}
     bne -
 
 ; start writing pixels after two rows (8 bytes for each row)
     clc
-    lda z_location3
+    lda z_zp4
     adc #16
-    sta z_location3
+    sta z_zp4
     bcc .handle_col
-    inc z_location3+1
+    inc z_zp4+1
         
 .handle_col
     lda (z_location),y
@@ -93,18 +101,18 @@ z_sprite_offset = z_counter2
     
 .write_value
     bit .m_one
-    bne +   
+    beq +
 
-    ldx #32             ; black module (prints space)
+    ;ldx #32             ; black module (prints space)
                         ; don't need to do anything for sprite here (as bits are 0 already)
-    jmp ++
+;    jmp ++
 
-+   ldx #160            ; white module (prints inverse space)
+    ;ldx #160            ; white module (prints inverse space)
     lda z_sprite_byte
     ora z_sprite_bit
     sta z_sprite_byte   ; collect module for sprite byte
 
-++  lda z_sprite_bit    ; shift bit to the right
++   lda z_sprite_bit    ; shift bit to the right
     clc
     lsr
     sta z_sprite_bit
@@ -115,12 +123,8 @@ z_sprite_offset = z_counter2
     lda #%10000000
     jsr .reset_sprite_byte
     
-+   txa
-    sta (z_location2),y
-    ;bne +
-
     ;move on
-    iny
++   iny
     cpy size
     bne .handle_col
     
@@ -128,7 +132,7 @@ z_sprite_offset = z_counter2
     ldy #0
     jsr .inc_line2
     jsr inc_line  
-    cmp stream2module.m_endAddress    ;needs to have z_location in accumulator
+    cmp m_endAddress    ;needs to have z_location in accumulator
     beq .end
     jmp .handle_col
 
@@ -136,48 +140,46 @@ z_sprite_offset = z_counter2
     rts
     
     
-.inc_line2
-    lda z_location2
-    clc
-    adc rsDivisorOffset
-    sta z_location2
-    bcc +
-    inc z_location2+1
-    
-+   jsr .write_sprite_byte
+.inc_line2    
+    jsr .write_sprite_byte
     lda #0
     sta z_sprite_offset
     lda #%00100000
     jsr .reset_sprite_byte
     clc
-    lda z_location3
+    lda z_zp4
     adc #8
-    sta z_location3
+    sta z_zp4
     bcc +
-    inc z_location3+1
+    inc z_zp4+1
 
 +   rts
 
 .reset_sprite_byte
-;    lda #%10000000             ;A needs to be set before calling this subroutine
     sta z_sprite_bit            ;used to keep track of bit    
     lda #0
     sta z_sprite_byte            ;used to collect the byte value for 8 modules each
     rts
 
 .write_sprite_byte
-    sty z_temp
-    
-    ldy z_sprite_offset    
+    ;sty z_temp
+
+!if target="mega65" {    
+    ldz z_sprite_offset    
     lda z_sprite_byte
-    sta (z_location3),y
+    sta [z_zp4],z
+    
+} else if target="c128" {
+    
+} else {
+;c64, vic20, x16
+    
+}
     inc z_sprite_offset
 
-    ldy z_temp
+    ;ldy z_temp
     rts
 
 .m_one          !byte 1
 .m_64           !byte 64
-.m_l3           !word 0
-.m_writeOffset  !byte 0
-.m_64byte       !byte %00111111
+m_l3            !byte 0,0,0

@@ -5,10 +5,12 @@
 ; - bank of the string address
 ; returns: location of 
 
-target = "mega65"
+;target = "mega65"
+target = "c128"
+renderTo = "sprite"
 
 !if target = "c128" {
-*= $1300
+*= $2800
   !to "qr.bin.prg",cbm
   
   create_runtime = 1
@@ -25,6 +27,7 @@ target = "mega65"
   z_temp      = $bf
   z_counter1  = $b0     ;ENDCHR
   z_counter2  = $a3     ;CHARAC or INTEGR
+  z_zp4       = $a4
 
 } else if target = "c64" {
 *= $C000
@@ -206,14 +209,20 @@ m_maskbit    !byte 2
     inx
     stx rsDivisorOffset
 }
-    jsr renderspr
 
     ; z_location3 points to the runtime data
     ; m_compWritePos holds the length of the runtime
-    ldx render.m_l3   ;these are set in render2.a
+!if renderTo = "sprite" {
+    jsr renderspr
+
+    ldx m_l3   ;these are set in render2.a
     stx $fb
-    ldy render.m_l3+1
+    ldy m_l3+1
     sty $fc
+} else {
+    jsr render
+}
+
     
     lda z_counter2
     sta $fd
@@ -264,6 +273,9 @@ m_zpa1          !word 0
 m_zpa2          !word 0
 m_zpa3          !word 0
 m_zpa4          !word 0
+!if renderTo = "sprite" {
+spriteOut       !word 0
+}
 
 !source "common.a"
 
@@ -281,7 +293,11 @@ m_zpa4          !word 0
 !source "patterns.a"        ; this writes timing, alignment, finder patterns etc.
 !source "stream2module.a"
 
-!source "renderspr.a"
+!if renderTo = "sprite" {
+  !source "renderspr.a"
+} else {
+  !source "render2.a"
+}
 
 ;!source "fsave.a"
 

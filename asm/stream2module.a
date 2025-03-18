@@ -28,8 +28,8 @@ writeDirection =       1  ;1=up, 0=down
 stream_to_module
         
     lda #0
-    sta .m_endAddress
-    sta .m_endAddress+1
+    sta m_endAddress
+    sta m_endAddress+1
     
     lda #<data
     sta z_location2
@@ -43,7 +43,7 @@ stream_to_module
     adc matrixSize
     sta z_location2
     sta z_location
-    sta .m_endAddress
+    sta m_endAddress
     bcc +
     inc z_location2+1
     
@@ -52,7 +52,7 @@ stream_to_module
     adc matrixSize+1
     sta z_location2+1
     sta z_location+1
-    sta .m_endAddress+1
+    sta m_endAddress+1
     
     jsr dec_location_by_1
     
@@ -219,12 +219,12 @@ writeAndAdvance
 
 ; check if we moved outside of the matrix (ie went to past the last row). if output > m_endAddress: change direction
     lda z_location+1
-    cmp .m_endAddress+1
+    cmp m_endAddress+1
     beq +
     jmp .endAdvWriteIdx2
     
 +   lda z_location
-    cmp .m_endAddress
+    cmp m_endAddress
     bcs .changeDirectionToUp
     
     jmp .endAdvWriteIdx2
@@ -249,7 +249,7 @@ writeAndAdvance
     
     
 .m_startAddress    !byte 0,0  ;$03e4-$03e5. absolute address of where the matrix starts. used for comparisons
-.m_endAddress      !byte 0,0  ;$03e6-$03e7. absolute address of where the matrix ends. used for comparisons
+m_endAddress      !byte 0,0  ;$03e6-$03e7. absolute address of where the matrix ends. used for comparisons
 .m_curCol          !byte 0  ;$03e6. current column to be written to
 .m_writeDirection  !byte 0  ;$03e7. are we moving up or down when writing modules. 1=up, 0=down
 .m_one             !byte #1  ;holds the value 1. used for BIT operation
