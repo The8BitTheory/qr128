@@ -27,7 +27,7 @@ p2a
   bcc .comp2
   
   ; >122
-  cmp #122
+  cmp #123
   bcs .comp2
   
   sec
@@ -41,7 +41,7 @@ p2a
   bcc .comp3
   
   ; > 218
-  cmp #218
+  cmp #219
   bcs .comp3  
   
   ; then a=a-128
