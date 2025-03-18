@@ -1,4 +1,4 @@
-﻿; petscii to ascii conversion
+; petscii to ascii conversion
 ; takes the result of pointer(x) as input (i). regx=loc lb, regy=loc hb, acc=length
 ; bank 1, peek(i) gives length of string, peek(i+1)+peek(i+2)*256 gives address of string
 
@@ -18,15 +18,28 @@ p2a
 } else {
     lda (z_location),y
 }
+
+  ; IF A>=97 AND A<=122 THEN A=A-32
+  cmp #97
+  bcc .comp2
   
+  ; >123
+  cmp #122
+  bcs .comp2
+  
+  sec
+  sbc #32
+  jmp .write
+  
+.comp2
   ; IF A>=193 AND A<=218 THEN A=A-128
   ; < 193
   cmp #193
-  bcc .comp2
+  bcc .comp3
   
   ; > 218
-  cmp #218
-  beq .comp2  
+  cmp #219
+  beq .comp3  
   
   ; then a=a-128
   sec
@@ -36,7 +49,7 @@ p2a
   
 ; IF A>=65 AND A<=90 THEN A=A+32
 ; a < 65
-.comp2
+.comp3
   cmp #65
   bcc .write
   
