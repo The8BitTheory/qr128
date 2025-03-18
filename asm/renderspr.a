@@ -2,12 +2,20 @@
 ;  this renders the qr-code to a 64-pixel wide vic-iv sprite.
 ; c128-vdc:
 ;  this renders the qr-code to pixel-data.
+;   not really a sprite, as that would be limited to 24 pixels (or so).
+;   vdc doesn't support sprites anyways.
+;   aiming towards Walrus Basic 8 structure and pattern.
+
+;  eg marinetraffic.com/en/ais/details/ships/mmsi:207072329
+;  results in a v3 code. 29 characters -> 4 bytes wide
 ; else:
 ;  not implemented yet
 
 ; z_location contains the pointer to read from
 ; z_location2 is the pointer to write the sprite pixels to.
 ; 
+
+k_jindsta = $ff77
 
 renderspr
 
@@ -66,7 +74,12 @@ z_sprite_offset = z_counter2
 -   sta [z_zp4],z
     dez
 } else if target = "c128" {
-; c128 needs to call FAR method to write to specific bank
+; c128 needs to call JINDSTA method to write to specific bank
+    ;$02b9 points to zp-pointer -> m_l3, m_l3+1
+    ; acc = value to be stored (preserved)
+    ; x = bank number -> m_l3+2
+    ; y = offset to address in zp-pointer (preserved)
+    
 
 } else {
 ; c64 and vic20 just write to regular memory
