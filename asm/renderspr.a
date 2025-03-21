@@ -27,7 +27,7 @@ z_sprite_offset = z_counter2
     jsr set_location_to_data
     ldy #0                    ;y holds the column (reset to zero after eol is reached)
     sty z_sprite_offset
-    ; z_location2 will hold the value of spriteOut times 64
+    ; z_zp4 will hold the value of spriteOut times 64
     sty z_zp4
     sty z_zp4+1
     sty z_zp4+2

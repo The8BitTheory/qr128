@@ -7,7 +7,7 @@
 
 ;target = "mega65"
 target = "c128"
-renderTo = "sprite"
+renderTo = "char"
 
 !if target = "c128" {
 *= $2800
@@ -76,8 +76,8 @@ renderTo = "sprite"
   knows_primm = 0
   basic_aio_starter = 0
 
-  z_location  = $22     ;$fb-$fc for storing indexed addresses
-  z_location2 = $24     ;$fd-$fe for storing indexed addresses
+  z_location  = $22     ;$fb-$fc for storing indexed addresses (usually the read address)
+  z_location2 = $24     ;$fd-$fe for storing indexed addresses (usually the write address)
   z_location3 = $26     ;$14-$15 LINNUM. we use this to write the "compressed" matrix
   z_temp      = $28
   z_counter1  = $29     ;ENDCHR
@@ -190,7 +190,7 @@ m_maskbit    !byte 2
     stx rsDivisorOffset
     
 } else if target = "mega65" {
-  
+; z_location2 = location to write to
     lda $d060
     sta z_location2
     lda $d061
@@ -221,9 +221,11 @@ m_maskbit    !byte 2
     sty $fc
 } else {
     jsr render
+    
+    ldx z_location3
+    ldy z_location3+1
 }
 
-    
     lda z_counter2
     sta $fd
 
@@ -251,8 +253,11 @@ m_maskbit    !byte 2
     lda m_zpa3
     sta z_location3
     lda m_zpa3+1
-    sta z_location3+1    
-    
+    sta z_location3+1
+
+!if renderTo = "char" {    
+    lda contentLength
+}
     
     rts
     
