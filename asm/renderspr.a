@@ -30,7 +30,7 @@ z_sprite_byte   = z_counter1+1
 z_sprite_offset = z_counter2
 
     jsr set_location_to_data
-    ldy #0                    ;y holds the column (reset to zero after eol is reached)
+    ldy #0                    ;y holds the read-column (reset to zero after eol is reached)
     sty .m_column
     sty z_sprite_offset
     
@@ -117,7 +117,11 @@ z_sprite_offset = z_counter2
 ; start writing pixels after two rows (8 bytes for each row)
     clc
     lda z_zp4
+!if target="mega65" {
     adc #16
+} else if target="c128" {
+    adc #8
+}
     sta z_zp4
     bcc .handle_col
     inc z_zp4+1
@@ -152,7 +156,9 @@ z_sprite_offset = z_counter2
     ora z_sprite_bit
     sta z_sprite_byte   ; collect module for sprite byte
 
-+   lda z_sprite_bit    ; shift bit to the right
++   iny
+    sty .m_column
+    lda z_sprite_bit    ; shift bit to the right
     clc
     lsr
     sta z_sprite_bit
@@ -164,9 +170,7 @@ z_sprite_offset = z_counter2
     jsr .reset_sprite_byte
     
     ;move on
-+   iny
-    sty .m_column
-    cpy size
++   cpy size
     bne .handle_col
     
     ; finish line
@@ -190,7 +194,11 @@ z_sprite_offset = z_counter2
     jsr .reset_sprite_byte
     clc
     lda z_zp4
+!if target="mega65" {
+    adc #8
+} else if target="c128" {
     adc #4
+}
     sta z_zp4
     bcc +
     inc z_zp4+1
