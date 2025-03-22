@@ -1,0 +1,13 @@
+{
+    "name": "qr",
+    "description": "Project asm",
+    "toolkit": "acme",
+    "sources": [
+        "qr.asm"
+    ],
+    "build": "debug",
+    "definitions": [],
+    "includes": [],
+    "args": [],
+    "compiler": ""
+}

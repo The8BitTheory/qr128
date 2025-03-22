@@ -12,6 +12,13 @@ init
     ; input address for petscii-to-ascii conversion
     stx z_location
     sty z_location+1
+
+!if renderTo="sprite" {
+    ldy $fd
+    sty m_pixeltarget
+    ldy $fe
+    sty m_pixeltarget+1
+}
     
     ; save zero-page values for later recovery
     ldy z_counter1
@@ -24,10 +31,12 @@ init
     ldy z_counter2+1
     sty m_zpa2+1
     
+!if create_runtime = 1 {
     ldy z_location3
     sty m_zpa3
     ldy z_location3+1
     sty m_zpa3+1
+}
 
 !if find_var = 0 {
     ; if find_var is true, then z_temp has been saved in var.a already

@@ -13,7 +13,12 @@
 
 ; z_location contains the pointer to read from
 ; z_location2 is the pointer to write the sprite pixels to.
-; 
+
+; bank of input string
+; address of input string
+; bank of pixel output
+; address of pixel output
+
 
 k_jindsta = $ff77
 
@@ -26,15 +31,18 @@ z_sprite_offset = z_counter2
 
     jsr set_location_to_data
     ldy #0                    ;y holds the column (reset to zero after eol is reached)
+    sty .m_column
     sty z_sprite_offset
-    ; z_zp4 will hold the value of spriteOut times 64
+    
+    lda #%00100000
+    jsr .reset_sprite_byte
+
+!if target="mega65" {    
+    ; On the MEGA65 z_zp4 will hold the value of spriteOut times 64
     sty z_zp4
     sty z_zp4+1
     sty z_zp4+2
     sty z_zp4+3
-    
-    lda #%00100000
-    jsr .reset_sprite_byte
 
     ; calculate sprite address, based on 16-bit sprite-index
     ldx spriteOut
@@ -55,7 +63,17 @@ z_sprite_offset = z_counter2
     beq +
     dec spriteOut+1
     jmp -
+} else if target="c128" {
+    ;z_zp4 = z_location2 output address low-byte (and high-byte at +1)
+    ;z_location3 = output bank
+    lda m_pixeltarget
+    sta z_location2
+    lda m_pixeltarget+1
+    sta z_location2+1
 
+    z_zp4=z_location2
+    
+}
 
 ; store z_zp4 for later return to caller. current value will be changed.
 +   lda z_zp4
@@ -64,6 +82,7 @@ z_sprite_offset = z_counter2
     sta m_l3+1
     lda z_zp4+2
     sta m_l3+2
+
     
     ;clear memory area
     lda #0
@@ -75,16 +94,23 @@ z_sprite_offset = z_counter2
     dez
 } else if target = "c128" {
 ; c128 needs to call JINDSTA method to write to specific bank
-    ;$02b9 points to zp-pointer -> m_l3, m_l3+1
+    ;$02b9 points to zp-pointer -> z_location2
     ; acc = value to be stored (preserved)
     ; x = bank number -> m_l3+2
     ; y = offset to address in zp-pointer (preserved)
-    
+
+    ldy #z_zp4
+    sty $02b9
+
+    ldy #0
+-   ldx z_location3
+    jsr k_jindsta
+    dey
 
 } else {
 ; c64 and vic20 just write to regular memory
 ; x16 might need writing to vram directly
-    
+    ; not implemented yet
 }
     bne -
 
@@ -97,6 +123,7 @@ z_sprite_offset = z_counter2
     inc z_zp4+1
         
 .handle_col
+    ldy .m_column
     lda (z_location),y
     bit .m_64   ;is xor-bit set?
     bvc .write_value  ;branch if this bit is not xored
@@ -138,13 +165,15 @@ z_sprite_offset = z_counter2
     
     ;move on
 +   iny
+    sty .m_column
     cpy size
     bne .handle_col
     
     ; finish line
     ldy #0
+    sty .m_column
     jsr .inc_line2
-    jsr inc_line  
+    jsr inc_line    
     cmp m_endAddress    ;needs to have z_location in accumulator
     beq .end
     jmp .handle_col
@@ -161,7 +190,7 @@ z_sprite_offset = z_counter2
     jsr .reset_sprite_byte
     clc
     lda z_zp4
-    adc #8
+    adc #4
     sta z_zp4
     bcc +
     inc z_zp4+1
@@ -177,13 +206,23 @@ z_sprite_offset = z_counter2
 .write_sprite_byte
     ;sty z_temp
 
-!if target="mega65" {    
-    ldz z_sprite_offset    
     lda z_sprite_byte
+    
+!if target="mega65" {
+    ldz z_sprite_offset    
     sta [z_zp4],z
     
 } else if target="c128" {
+; c128 needs to call JINDSTA method to write to specific bank
+    ;$02b9 points to zp-pointer -> z_location2
+    ; acc = value to be stored (preserved)
+    ; x = bank number -> m_l3+2
+    ; y = offset to address in zp-pointer (preserved)
     
+    ldy z_sprite_offset
+    ldx z_location3
+    jsr k_jindsta
+
 } else {
 ;c64, vic20, x16
     
@@ -195,4 +234,6 @@ z_sprite_offset = z_counter2
 
 .m_one          !byte 1
 .m_64           !byte 64
+.m_column       !byte 0
 m_l3            !byte 0,0,0
+m_pixeltarget        !byte 0,0
