@@ -8,6 +8,17 @@ k_primm   = $ff7d; works for c128 and mega65
 init
 !zone init
     sta contentLength
+
+    lda z_location
+    sta m_zpal
+    lda z_location+1
+    sta m_zpal+1
+
+    lda z_location2
+    sta m_zpal2
+    lda z_location2+1
+    sta m_zpal2+1
+
     stx z_location
     sty z_location+1
         
@@ -29,13 +40,14 @@ init
     
     
     ; store some zero-page values for later recovery. and set these to value zero
-    ldx #3
+    ldx #1
 -   lda z_zp4,x
     sta m_zp4,x
     lda #0
     sta z_zp4,x
     dex
     bne -
+
         
     ; output address for petscii-to-ascii conversion
     ldx #<data

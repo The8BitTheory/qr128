@@ -82,6 +82,16 @@ m_maskbit    !byte 2
     dex
     bne -
 
+    lda m_zpal
+    sta z_location
+    lda m_zpal+1
+    sta z_location+1
+
+    lda m_zpal2
+    sta z_location2
+    lda m_zpal2+1
+    sta z_location2+1
+
     lda size
 ;    sta z_location2+1
     ; z_location points to the runtime data
@@ -113,6 +123,8 @@ m_zpa1          !word 0,0
 m_zpa2          !word 0,0
 m_zpa4          !word 0,0
 m_zp4           !word 0,0 ;used to preserve and recover zero-page addresses
+m_zpal          !word 0
+m_zpal2         !word 0
 
 !source "common.a"
 
