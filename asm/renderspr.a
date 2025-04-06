@@ -14,57 +14,41 @@ z_sprite_offset = z_counter2
     ldy #0                    ;y holds the column (reset to zero after eol is reached)
     sty z_sprite_offset
     ; z_location2 will hold the value of spriteOut times 64l
-    sty z_zp4
-    sty z_zp4+1
-    sty z_zp4+2
-    sty z_zp4+3
+    sty z_location2
+    sty z_location2+1
     
     lda #%00100000
     jsr .reset_sprite_byte
 
-    ; calculate sprite address, based on 16-bit sprite-index
-    ldx spriteOut
--   clc
-    lda z_zp4
-    adc #$40
-    sta z_zp4
-    bcc +
-    lda z_zp4+1
-    adc #0
-    sta z_zp4+1
-    bcc +
-    inc z_zp4+2
-    
-+   dex
-    bne -
-    lda spriteOut+1
-    beq +
-    dec spriteOut+1
-    jmp -
+    ;calculate pixel output address. comes after data (same as datastream location in previous steps)
+    ; m_l3: store z_location2 for later return to caller. current value will be changed.
 
-
-; store z_zp4 for later return to caller. current value will be changed.
-+   lda z_zp4
+    clc
+    lda #<data
+    adc matrixSize
+    sta z_location2
     sta m_l3
-    lda z_zp4+1
+    
+    lda #>data
+    adc matrixSize+1
+    sta z_location2+1
     sta m_l3+1
-    lda z_zp4+2
-    sta m_l3+2
+
     
     ;clear memory area
     lda #0
-    ldz #0
--   sta [z_zp4],z
-    dez
+    ldy #0
+-   sta (z_location2),y
+    dey
     bne -
 
-; start writing pixels after two rows (8 bytes for each row)
+; start writing pixels after two rows (4 bytes for each row)
     clc
-    lda z_zp4
-    adc #16
-    sta z_zp4
+    lda z_location2
+    adc #8
+    sta z_location2
     bcc .handle_col
-    inc z_zp4+1
+    inc z_location2+1
         
 .handle_col
     lda (z_location),y
@@ -130,11 +114,11 @@ z_sprite_offset = z_counter2
     lda #%00100000
     jsr .reset_sprite_byte
     clc
-    lda z_zp4
-    adc #8
-    sta z_zp4
+    lda z_location2
+    adc #4
+    sta z_location2
     bcc +
-    inc z_zp4+1
+    inc z_location2+1
 
 +   rts
 
@@ -145,16 +129,16 @@ z_sprite_offset = z_counter2
     rts
 
 .write_sprite_byte
-    ;sty z_temp
+    sty z_temp
     
-    ldz z_sprite_offset    
+    ldy z_sprite_offset    
     lda z_sprite_byte
-    sta [z_zp4],z
+    sta (z_location2),y
     inc z_sprite_offset
 
-    ;ldy z_temp
+    ldy z_temp
     rts
 
 .m_one          !byte 1
 .m_64           !byte 64
-m_l3           !byte 0,0,0
+m_l3           !byte 0,0

@@ -1,0 +1,13 @@
+{
+    "name": "qr",
+    "description": "QR-Code Generator. Branch for Basic 8",
+    "toolkit": "acme",
+    "sources": [
+        "qr.asm"
+    ],
+    "build": "debug",
+    "definitions": [],
+    "includes": [],
+    "args": [],
+    "compiler": ""
+}

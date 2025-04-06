@@ -13,11 +13,9 @@
 ; poke $fd,$f0:poke $fe,$01: rem output sprite index $01f0 (496 dec -> 31744 in bank 0)
 ; SYS qr,0,$fb,$fd : rem read input string from bank 0, $fb-$fc, and write to sprite-index
 
-!cpu m65
+!cpu 6510
 
-target = "mega65"
-
-
+target = "c128"
 
 ; SYS maps $E000-$FFFF to the MEGA65 KERNAL (3.E000-3.FFFF),
 ; $2000-$7FFF to 0.2000-0.7FFF, and leaves $0000-$1FFF and $8000-$DFFF "unmapped."
@@ -25,14 +23,14 @@ target = "mega65"
 ; This allows $C000-$CFFF and $D000-$DFFF to fall through to INTERFACE and VIC registers, respectively
 ; and $8000-$BFFF to fall through to bank 0 RAM.
 
-*= $7000
+*= $2000
   ; 196-203 ($c4-$cb) are rs232 input- and output buffer start and end addresses
   ; these are free to use, as long as rs232 is not used
 
-  !to "qrspr.7000",cbm
+  ;!to "qrspr.7000",cbm
   
   nr_patterns = 1
-  max_version = 5
+  max_version = 3
   knows_primm = 1
   
   ;$02-$8f are supposed to be basic-only addresses. it should be save to preserve and restore this area
@@ -40,12 +38,13 @@ target = "mega65"
   z_location  = $fb     ;$fb-$fc for storing indexed addresses
   z_location2 = $fd     ;$fd-$fe for storing indexed addresses
   
-  z_temp      = $c6     ;-- stored in m_zpa4
-  z_counter1  = $c8     ;ENDCHR   -- stored in m_zpa1
-  z_counter2  = $ca     ;VERCK    -- stored in m_zpa2
-  z_zp4       = $8b
+  z_temp      = $bf     ;-- stored in m_zpa4
+  z_counter1  = $b0     ;ENDCHR   -- stored in m_zpa1
+  z_counter2  = $a3     ;VERCK    -- stored in m_zpa2
+  z_zp4       = $a4
 
 ;start
+;    cli
     jsr init
     bcs .too_long
     bcc +
@@ -61,17 +60,6 @@ m_maskbit    !byte 2
 
     jsr renderspr
 
-    ; z_location points to the runtime data
-    ldx m_l3   ;these are set in renderspr.a
-    stx z_location
-    ldy m_l3+1
-    sty z_location+1
-    ldy m_l3+2
-    sty z_location2
-    
-    lda size
-    sta z_location2+1
-    
     ;recover zeropage values
     lda m_zpa1
     sta z_counter1
@@ -88,33 +76,42 @@ m_maskbit    !byte 2
     lda m_zpa4+1
     sta z_temp+1
     
-    ldx #3
+    ldx #1
 -   lda m_zp4,x
     sta z_zp4,x
     dex
     bne -
+
+    lda size
+;    sta z_location2+1
+    ; z_location points to the runtime data
+    ldx m_l3   ;these are set in renderspr.a
+;    stx z_location
+    ldy m_l3+1
+;    sty z_location+1
     
-    
+;    sei
     rts
     
     ;content too long
 .too_long
     lda #0
+    sei
     rts
          
 size            !byte 0   ;size of one axis-length of the final matrix
 contentLength   !byte 0   ;size of the provided URL, also used when writing the "compressed" matrix in render2.a
 inputBank       !byte 0
-spriteOut       !word 0
+spriteOut       !word 0,0
 eccLength       !byte 0   ;nr of ecc bytes to generate  
 streamLength    !byte 0 
 matrixSize      !byte 0,0 ;size of the matrix in modules (1 byte per module)
 rsDivisorOffset !byte 0
 m_xpos          !byte 0
 m_ypos          !byte 0
-m_zpa1          !word 0
-m_zpa2          !word 0
-m_zpa4          !word 0
+m_zpa1          !word 0,0
+m_zpa2          !word 0,0
+m_zpa4          !word 0,0
 m_zp4           !word 0,0 ;used to preserve and recover zero-page addresses
 
 !source "common.a"

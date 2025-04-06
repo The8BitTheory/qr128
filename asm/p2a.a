@@ -4,23 +4,22 @@
 
 ; this routine is inspired from the GoDot QR-Code Generator Module by Arndt Dettke
 
-
-k_indfet = $ff74
+k_indfet = $02a2
 
 p2a
 
     ldy #0
-    ldz #0
     lda z_location
     sta z_zp4
     lda z_location+1
     sta z_zp4+1
-    lda inputBank
-    sta z_zp4+2
-    stz z_zp4+3
+
+    lda #z_zp4
+    sta $02aa
 
 .loop
-    lda [z_zp4],z
+    ldx #$7f
+    jsr k_indfet
     
   ; IF A>=97 AND A<=122 THEN A=A-32
   cmp #97
@@ -65,7 +64,6 @@ p2a
 .write
   sta (z_location2),y
   iny
-  inz
   cpy contentLength
   bne .loop
   
