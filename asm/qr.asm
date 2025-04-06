@@ -23,7 +23,7 @@ target = "c128"
 ; This allows $C000-$CFFF and $D000-$DFFF to fall through to INTERFACE and VIC registers, respectively
 ; and $8000-$BFFF to fall through to bank 0 RAM.
 
-*= $2000
+*= $8b05
   ; 196-203 ($c4-$cb) are rs232 input- and output buffer start and end addresses
   ; these are free to use, as long as rs232 is not used
 
