@@ -1,0 +1,13 @@
+{
+    "name": "qr128",
+    "description": "Project qr128",
+    "toolkit": "acme",
+    "sources": [
+        "asm/qr.a"
+    ],
+    "build": "debug",
+    "definitions": [],
+    "includes": [],
+    "args": [],
+    "compiler": ""
+}

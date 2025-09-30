@@ -1,0 +1,13 @@
+{
+    "name": "qrm65.bin",
+    "description": "Project asm",
+    "toolkit": "acme",
+    "sources": [
+        "src/qr.asm"
+    ],
+    "build": "debug",
+    "definitions": [],
+    "includes": [],
+    "args": [],
+    "compiler": ""
+}
