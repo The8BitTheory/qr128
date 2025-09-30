@@ -17,8 +17,6 @@
 
 target = "mega65"
 
-
-
 ; SYS maps $E000-$FFFF to the MEGA65 KERNAL (3.E000-3.FFFF),
 ; $2000-$7FFF to 0.2000-0.7FFF, and leaves $0000-$1FFF and $8000-$DFFF "unmapped."
 
@@ -59,7 +57,7 @@ m_maskbit    !byte 2
     jsr write_patterns
     jsr stream_to_module
 
-    jsr renderspr
+    jsr rendersprvic4
 
     ; z_location points to the runtime data
     ldx m_l3   ;these are set in renderspr.a
@@ -117,18 +115,18 @@ m_zpa2          !word 0
 m_zpa4          !word 0
 m_zp4           !word 0,0 ;used to preserve and recover zero-page addresses
 
-!source "common.a"
+!source "src/common.a"
 
-!source "init.a"
-!source "p2a.a"           ; reads petscii bytes from z_location and writes ascii to z_location2 (which is matrix-start)
-!source "bytes2stream.a"    ; reads ascii from z_location2 and writes into datastream at z_location (=data+matrix_size)
+!source "src/init.a"
+!source "src/p2a.a"           ; reads petscii bytes from z_location and writes ascii to z_location2 (which is matrix-start)
+!source "src/bytes2stream.a"    ; reads ascii from z_location2 and writes into datastream at z_location (=data+matrix_size)
                             ; z_counter1 holds the right offset for rs.a to continue using it.
-!source "masks.a"           ; this clears the matrix memory area and calculates all the xor-masks
-!source "rs.a"              ; reads content bytes from datastream (z_location) and writes ecc bytes to 
+!source "src/masks.a"           ; this clears the matrix memory area and calculates all the xor-masks
+!source "src/rs.a"              ; reads content bytes from datastream (z_location) and writes ecc bytes to 
                             ; z_location2(=z_location + z_counter1)
-!source "patterns.a"        ; this writes timing, alignment, finder patterns etc.
-!source "stream2module.a"
+!source "src/patterns.a"        ; this writes timing, alignment, finder patterns etc.
+!source "src/stream2module.a"
 
-!source "renderspr.a"
+!source "src/renderspr.a"
 
 data    !byte 0

@@ -1,11 +1,7 @@
-﻿; this renders the qr-code to a 64-pixel wide vic-iv sprite.
-; z_location contains the pointer to read from
-; z_location2 is the pointer to write the sprite pixels to.
-; 
-
-renderspr
+rendersprvic4
 
 !zone render
+
 z_sprite_bit    = z_counter1
 z_sprite_byte   = z_counter1+1
 z_sprite_offset = z_counter2
@@ -125,8 +121,9 @@ z_sprite_offset = z_counter2
     
 .inc_line2    
     jsr .write_sprite_byte
-    lda #0
-    sta z_sprite_offset
+    ;lda #0
+    ;sta z_sprite_offset
+    stz z_sprite_offset
     lda #%00100000
     jsr .reset_sprite_byte
     clc
@@ -140,8 +137,9 @@ z_sprite_offset = z_counter2
 
 .reset_sprite_byte
     sta z_sprite_bit            ;used to keep track of bit    
-    lda #0
-    sta z_sprite_byte            ;used to collect the byte value for 8 modules each
+    ;lda #0
+    ;sta z_sprite_byte            ;used to collect the byte value for 8 modules each
+    stz z_sprite_byte
     rts
 
 .write_sprite_byte

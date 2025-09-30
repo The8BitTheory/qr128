@@ -81,8 +81,9 @@ calc_xor_masks
     bne -     ; last column not passed, continue with next module
     
     ; last column passed
-    lda #0
-    sta m_xpos
+    ;lda #0
+    ;sta m_xpos
+    stz m_xpos
     inc m_ypos            ; increase row
     lda m_ypos
     cmp size              ; if passed last row, we're done

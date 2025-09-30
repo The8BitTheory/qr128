@@ -23,13 +23,13 @@ writeDirection =       1  ;1=up, 0=down
 
 !zone stream2module
 
-    
-
 stream_to_module
         
-    lda #0
-    sta m_endAddress
-    sta m_endAddress+1
+    ;lda #0
+    ;sta m_endAddress
+    ;sta m_endAddress+1
+    stz m_endAddress
+    stz m_endAddress+1
     
     lda #<data
     sta z_location2
@@ -201,8 +201,9 @@ writeAndAdvance
     dec z_location+1
 
     ; write new direction
-+   lda #0
-    sta .m_writeDirection
++   ;lda #0
+    ;sta .m_writeDirection
+    stz .m_writeDirection
     
     ; update column information
     dec .m_curCol

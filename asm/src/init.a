@@ -1,4 +1,4 @@
-; this calculates all sizes according to the length of the content
+﻿; this calculates all sizes according to the length of the content
 ; accumulator holds bank of address
 ; $fb address lb
 ; $fc address hb
@@ -35,8 +35,9 @@ init
     ldx #3
 -   lda z_zp4,x
     sta m_zp4,x
-    lda #0
-    sta z_zp4,x
+;    lda #0
+;    sta z_zp4,x
+    stz z_zp4,x
     dex
     bne -
         
@@ -56,8 +57,9 @@ init
     sta z_zp4+1
     lda inputBank
     sta z_zp4+2
-    lda #0
-    sta z_zp4+3
+    ;lda #0
+    ;sta z_zp4+3
+    stz z_zp4+3
     
     ldz #0
 -   lda [z_zp4],z
@@ -84,8 +86,9 @@ init
     sta eccLength
     lda #26
     sta streamLength
-    lda #0
-    sta rsDivisorOffset
+    ;lda #0
+    ;sta rsDivisorOffset
+    stz rsDivisorOffset
     jmp ++
     
 +   cmp #33

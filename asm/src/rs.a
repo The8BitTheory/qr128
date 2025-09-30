@@ -115,8 +115,9 @@ rsmultiply:
     stx .rsmulx
     sty .rsmuly
     
-    lda #0
-    sta .rsmulres
+    ;lda #0
+    ;sta .rsmulres
+    stz .rsmulres
     
     ldy #7
     
