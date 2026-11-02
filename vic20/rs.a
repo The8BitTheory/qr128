@@ -54,7 +54,7 @@ rs
     sta z_location2
     bcs +
     
-    dec z_location2
+    dec z_location2+1
     
     ; clear result area
 +   ldy eccLength

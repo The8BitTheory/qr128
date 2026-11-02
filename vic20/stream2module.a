@@ -175,13 +175,11 @@ writeAndAdvance
     jsr inc_location_by_1
     
 ; check if we moved outside of the matrix (ie went to before the first row). if output < m_startAddress: change direction
-    lda z_location+1
-    cmp .m_startAddress+1
-    beq +
-    jmp .endAdvWriteIdx2
-    
-+   lda z_location
+    ; 16-bit compare: the row above may lie in the previous page, so the high bytes can differ
+    lda z_location
     cmp .m_startAddress
+    lda z_location+1
+    sbc .m_startAddress+1
     bcc .changeDirectionToDown
     
     ; not changing direction. update col and check if new location is occupied
@@ -225,13 +223,11 @@ writeAndAdvance
     jsr inc_location_by_1
 
 ; check if we moved outside of the matrix (ie went to past the last row). if output > m_endAddress: change direction
-    lda z_location+1
-    cmp .m_endAddress+1
-    beq +
-    jmp .endAdvWriteIdx2
-    
-+   lda z_location
+    ; 16-bit compare: the row below may lie in the next page, so the high bytes can differ
+    lda z_location
     cmp .m_endAddress
+    lda z_location+1
+    sbc .m_endAddress+1
     bcs .changeDirectionToUp
     
     jmp .endAdvWriteIdx2
